@@ -20,9 +20,10 @@ def ai_env(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     capture: dict = {}
 
-    def fake_complete(provider, api_key, model, system_prompt, context, question, max_tokens=2048):
-        capture.update(provider=provider, api_key=api_key, model=model,
-                       system_prompt=system_prompt, context=context, question=question)
+    def fake_complete(provider, api_key, model, system_prompt, context, question,
+                      max_tokens=2048, base_url=None):
+        capture.update(provider=provider, api_key=api_key, model=model, system_prompt=system_prompt,
+                       context=context, question=question, base_url=base_url)
         return "AI RESULT TEXT"
 
     monkeypatch.setattr(ai, "complete", fake_complete)
@@ -154,8 +155,9 @@ def test_openai_adapter_message_shape(monkeypatch):
             return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="OPENAI OUT"))])
 
     class _FakeOpenAI:
-        def __init__(self, api_key=None):
+        def __init__(self, api_key=None, base_url=None):
             capture["api_key"] = api_key
+            capture["base_url"] = base_url
             self.chat = SimpleNamespace(completions=_Completions())
 
     fake_mod = types.ModuleType("openai")
@@ -164,10 +166,55 @@ def test_openai_adapter_message_shape(monkeypatch):
 
     out = ai_providers._openai("k", "gpt-4o", "SYS", "CTX", "Q", 2048)
     assert out == "OPENAI OUT"
-    assert capture["model"] == "gpt-4o"
+    assert capture["model"] == "gpt-4o" and capture["base_url"] is None
     msgs = capture["messages"]
     assert msgs[0]["role"] == "system" and "CTX" in msgs[0]["content"]
     assert msgs[1] == {"role": "user", "content": "Q"}
+
+
+def test_local_provider_routes_to_ollama(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    capture: dict = {}
+
+    def fake_complete(provider, api_key, model, system_prompt, context, question,
+                      max_tokens=2048, base_url=None):
+        capture.update(provider=provider, api_key=api_key, model=model, base_url=base_url)
+        return "LOCAL OUT"
+
+    monkeypatch.setattr(ai, "complete", fake_complete)
+    # No API key needed for local — just switch provider.
+    runner.invoke(app, ["ai", "set-provider", "local"])
+    result = runner.invoke(app, ["ai", "analyze"])
+    assert result.exit_code == 0 and "LOCAL OUT" in result.output
+    assert capture["provider"] == "local"
+    assert capture["model"] == "gemma4"
+    assert capture["base_url"] == "http://localhost:11434/v1"
+    assert not capture["api_key"]  # None/empty — local needs no key
+
+
+def test_local_adapter_uses_base_url_and_placeholder_key(monkeypatch):
+    capture: dict = {}
+
+    class _Completions:
+        def create(self, **kwargs):
+            capture.update(kwargs)
+            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="GEMMA OUT"))])
+
+    class _FakeOpenAI:
+        def __init__(self, api_key=None, base_url=None):
+            capture["api_key"] = api_key
+            capture["base_url"] = base_url
+            self.chat = SimpleNamespace(completions=_Completions())
+
+    fake_mod = types.ModuleType("openai")
+    fake_mod.OpenAI = _FakeOpenAI
+    monkeypatch.setitem(sys.modules, "openai", fake_mod)
+
+    out = ai_providers._openai(None, "gemma4", "SYS", "CTX", "Q", 2048,
+                               base_url="http://localhost:11434/v1")
+    assert out == "GEMMA OUT"
+    assert capture["base_url"] == "http://localhost:11434/v1"
+    assert capture["api_key"] == "local"  # placeholder when no key configured
 
 
 def test_unknown_provider():

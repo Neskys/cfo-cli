@@ -6,9 +6,9 @@ from rich.panel import Panel
 
 from cfo.services import ai as svc
 from cfo.services.ai import AIError, VALID_PROVIDERS
-from cfo.core.config import set_api_key, set_provider, set_ai_model, get_provider
+from cfo.core.config import set_api_key, set_provider, set_ai_model, set_base_url, get_provider
 
-app = typer.Typer(help="Ask Claude or OpenAI about your finances (aggregated data only).")
+app = typer.Typer(help="Ask an AI provider about your finances (aggregated data only).")
 console = Console()
 
 
@@ -24,11 +24,12 @@ def _fail(err: AIError):
 
 @app.command("config")
 def ai_config(
-    api_key: str = typer.Option(..., "--api-key", help="API key for the provider (sk-...)"),
-    provider: str = typer.Option(None, "--provider", help="anthropic | openai"),
+    api_key: str = typer.Option(None, "--api-key", help="API key (not needed for 'local')"),
+    provider: str = typer.Option(None, "--provider", help="anthropic | openai | local"),
     model: str = typer.Option(None, "--model", help="Override the provider's default model"),
+    base_url: str = typer.Option(None, "--base-url", help="OpenAI-compatible endpoint (e.g. Ollama)"),
 ):
-    """Store an API key (and optionally provider/model) in ~/.cfo/config.json."""
+    """Configure an AI provider in ~/.cfo/config.json (key/model/base-url)."""
     if provider is not None:
         provider = provider.lower()
         if provider not in VALID_PROVIDERS:
@@ -36,15 +37,18 @@ def ai_config(
             raise typer.Exit(1)
         set_provider(provider)
     target = provider or get_provider()
-    set_api_key(api_key, target)
+    if api_key:
+        set_api_key(api_key, target)
     if model:
         set_ai_model(model, target)
-    masked = f"{api_key[:6]}…{api_key[-4:]}" if len(api_key) > 12 else "set"
-    console.print(f"[green]✓[/green] API key saved for [bold]{target}[/bold] ([dim]{masked}[/dim]).")
+    if base_url:
+        set_base_url(base_url, target)
+    detail = "API key saved" if api_key else "configured"
+    console.print(f"[green]✓[/green] Provider [bold]{target}[/bold] {detail}.")
 
 
 @app.command("set-provider")
-def ai_set_provider(provider: str = typer.Argument(..., help="anthropic | openai")):
+def ai_set_provider(provider: str = typer.Argument(..., help="anthropic | openai | local")):
     """Switch the active AI provider."""
     provider = provider.lower()
     if provider not in VALID_PROVIDERS:

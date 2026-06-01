@@ -21,7 +21,7 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 - **CLI-first** — scriptable, git-friendly, fast
 - **Local-first** — SQLite database in `~/.cfo/`, zero cloud dependency
 - **Multi-currency** — EUR, USD, GBP, CHF and more, with cached exchange rates
-- **AI-powered** — analyze your finances in plain language with Claude or OpenAI (`pip install 'cfo-cli[ai]'` / `[openai]`)
+- **AI-powered** — analyze your finances in plain language with Claude, OpenAI, or a **free local model** (Gemma 4 via Ollama — no cost, offline)
 - **Open source** — MIT licensed, extensible, transparent
 
 ---
@@ -36,7 +36,7 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 | 📈 Cash flow forecasting | ✅ v0.4 |
 | 📄 CSV & PDF reports | ✅ v0.5 |
 | 🌍 Multi-currency | ✅ v0.6 |
-| 🤖 AI insights (Claude / OpenAI) | ✅ v0.7 · v0.8 |
+| 🤖 AI insights (Claude / OpenAI / local Gemma) | ✅ v0.7 · v0.8 · v0.9 |
 
 ---
 
@@ -153,7 +153,21 @@ cfo ai anomalies --threshold 2.0
 cfo ai suggest --goal reduce-expenses
 ```
 
-cfo-cli sends only **aggregated** figures (totals and breakdowns, never individual transactions) and keeps token usage low via prompt caching. Default models are `claude-sonnet-4-6` (Anthropic) and `gpt-4o` (OpenAI), overridable with `--model`. API keys are stored locally in `~/.cfo/config.json`. Authentication is by **API key** for both providers (the inference APIs are not OAuth-based).
+#### Run at no cost — local Gemma 4 via Ollama
+
+Use a free, offline model with **no API key and no cost**: install [Ollama](https://ollama.com), pull Gemma 4, and point cfo-cli at it.
+
+```bash
+pip install 'cfo-cli[openai]'        # the local provider reuses the OpenAI-compatible client
+ollama pull gemma4                   # download the open-weights model once
+cfo ai set-provider local            # defaults to http://localhost:11434/v1, model 'gemma4'
+
+cfo ai analyze --focus cashflow      # runs entirely on your machine
+```
+
+Override the endpoint or model if needed: `cfo ai config --provider local --base-url http://host:11434/v1 --model gemma4:27b`.
+
+cfo-cli sends only **aggregated** figures (totals and breakdowns, never individual transactions) and keeps token usage low via prompt caching on the hosted providers. Default models: `claude-sonnet-4-6` (Anthropic), `gpt-4o` (OpenAI), `gemma4` (local), overridable with `--model`. Config is stored locally in `~/.cfo/config.json`. Authentication is by **API key** for the hosted providers (the inference APIs are not OAuth-based); the local provider needs no key.
 
 ---
 

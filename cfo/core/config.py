@@ -73,3 +73,16 @@ def set_ai_model(model: str, provider: str | None = None) -> None:
     config = load_config()
     config[f"{provider}_model"] = model
     _save(config)
+
+
+def get_base_url(provider: str | None = None) -> str | None:
+    """Per-provider base-URL override (for OpenAI-compatible servers like Ollama)."""
+    provider = provider or get_provider()
+    return load_config().get(f"{provider}_base_url")
+
+
+def set_base_url(base_url: str, provider: str | None = None) -> None:
+    provider = provider or get_provider()
+    config = load_config()
+    config[f"{provider}_base_url"] = base_url
+    _save(config)
