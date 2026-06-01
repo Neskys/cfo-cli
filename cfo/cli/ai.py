@@ -5,10 +5,10 @@ from rich.console import Console
 from rich.panel import Panel
 
 from cfo.services import ai as svc
-from cfo.services.ai import AIError
-from cfo.core.config import set_api_key
+from cfo.services.ai import AIError, VALID_PROVIDERS
+from cfo.core.config import set_api_key, set_provider, set_ai_model, get_provider
 
-app = typer.Typer(help="Ask Claude about your finances (aggregated data only).")
+app = typer.Typer(help="Ask Claude or OpenAI about your finances (aggregated data only).")
 console = Console()
 
 
@@ -23,11 +23,35 @@ def _fail(err: AIError):
 
 
 @app.command("config")
-def ai_config(api_key: str = typer.Option(..., "--api-key", help="Anthropic API key (sk-...)")):
-    """Store your Anthropic API key in ~/.cfo/config.json."""
-    set_api_key(api_key)
+def ai_config(
+    api_key: str = typer.Option(..., "--api-key", help="API key for the provider (sk-...)"),
+    provider: str = typer.Option(None, "--provider", help="anthropic | openai"),
+    model: str = typer.Option(None, "--model", help="Override the provider's default model"),
+):
+    """Store an API key (and optionally provider/model) in ~/.cfo/config.json."""
+    if provider is not None:
+        provider = provider.lower()
+        if provider not in VALID_PROVIDERS:
+            console.print(f"[red]Unknown provider '{provider}'.[/red] Choose: {', '.join(VALID_PROVIDERS)}")
+            raise typer.Exit(1)
+        set_provider(provider)
+    target = provider or get_provider()
+    set_api_key(api_key, target)
+    if model:
+        set_ai_model(model, target)
     masked = f"{api_key[:6]}…{api_key[-4:]}" if len(api_key) > 12 else "set"
-    console.print(f"[green]✓[/green] API key saved ([dim]{masked}[/dim]).")
+    console.print(f"[green]✓[/green] API key saved for [bold]{target}[/bold] ([dim]{masked}[/dim]).")
+
+
+@app.command("set-provider")
+def ai_set_provider(provider: str = typer.Argument(..., help="anthropic | openai")):
+    """Switch the active AI provider."""
+    provider = provider.lower()
+    if provider not in VALID_PROVIDERS:
+        console.print(f"[red]Unknown provider '{provider}'.[/red] Choose: {', '.join(VALID_PROVIDERS)}")
+        raise typer.Exit(1)
+    set_provider(provider)
+    console.print(f"[green]✓[/green] AI provider set to [bold]{provider}[/bold].")
 
 
 @app.command("analyze")
@@ -36,7 +60,7 @@ def ai_analyze(
     date_from: str = typer.Option(None, "--from", help="Start date YYYY-MM-DD"),
     date_to: str = typer.Option(None, "--to", help="End date YYYY-MM-DD"),
 ):
-    """Analyze your finances with Claude."""
+    """Analyze your finances with the configured AI provider."""
     try:
         result = svc.analyze(focus, date_from, date_to)
     except AIError as e:
@@ -67,7 +91,7 @@ def ai_suggest(
     date_from: str = typer.Option(None, "--from", help="Start date YYYY-MM-DD"),
     date_to: str = typer.Option(None, "--to", help="End date YYYY-MM-DD"),
 ):
-    """Get prioritized, data-grounded suggestions from Claude."""
+    """Get prioritized, data-grounded suggestions from the configured AI provider."""
     try:
         result = svc.suggest(goal, date_from, date_to)
     except AIError as e:

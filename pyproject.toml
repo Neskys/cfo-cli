@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cfo-cli"
-version = "0.7.0"
+version = "0.8.0"
 description = "Open-source financial CLI for freelancers, consultants, and small teams"
 readme = "README.md"
 license = {text = "MIT"}
@@ -41,6 +41,9 @@ dev = [
 ]
 ai = [
     "anthropic>=0.25",
+]
+openai = [
+    "openai>=1.0",
 ]
 
 [project.scripts]

@@ -1,13 +1,15 @@
-"""AI-powered financial insights via the Anthropic SDK (optional [ai] extra).
+"""AI-powered financial insights via Claude or OpenAI (optional [ai] / [openai] extras).
 
-Only aggregated data is sent to Claude — never individual transaction rows.
-The financial-context block is cached (prompt caching) so repeated calls within
-a session reuse it cheaply.
+Only aggregated data is sent to the model — never individual transaction rows.
+The financial-context block is sent first so it is cached cheaply (Anthropic prompt
+caching / OpenAI automatic prefix caching). Provider-specific calls live in ai_providers.
 """
 
-from cfo.core.config import get_api_key, get_base_currency
+from cfo.core.config import get_api_key, get_base_currency, get_provider, get_ai_model
+from cfo.services.ai_providers import AIError, complete, PROVIDER_DEFAULT_MODEL, VALID_PROVIDERS
 
-DEFAULT_MODEL = "claude-sonnet-4-6"
+__all__ = ["AIError", "VALID_PROVIDERS", "VALID_FOCUS", "VALID_GOALS",
+           "analyze", "anomalies", "suggest", "build_context"]
 
 VALID_FOCUS = ("expenses", "income", "cashflow", "all")
 VALID_GOALS = ("reduce-expenses", "increase-cashflow", "optimize-categories")
@@ -18,18 +20,6 @@ SYSTEM_PROMPT = (
     "transactions). Base your answers strictly on that data, quantify with the figures "
     "provided, and be concise and actionable. If the data is empty or insufficient, say so."
 )
-
-
-class AIError(Exception):
-    """Validation, configuration, or API failure surfaced to the CLI cleanly."""
-
-
-def _client(api_key: str):
-    try:
-        import anthropic
-    except ImportError:
-        raise AIError("AI features need the 'anthropic' package. Install: pip install 'cfo-cli[ai]'")
-    return anthropic.Anthropic(api_key=api_key)
 
 
 def _fmt(rows) -> str:
@@ -67,27 +57,15 @@ def build_context(date_from=None, date_to=None) -> str:
 
 
 def _complete(context: str, question: str, max_tokens: int = 2048) -> str:
-    api_key = get_api_key()
+    provider = get_provider()
+    api_key = get_api_key(provider)
     if not api_key:
-        raise AIError("No API key configured. Run: cfo ai config --api-key sk-...")
-    client = _client(api_key)
-    # Stable instructions + cached context block; the volatile question goes in messages.
-    system = [
-        {"type": "text", "text": SYSTEM_PROMPT},
-        {"type": "text", "text": context, "cache_control": {"type": "ephemeral"}},
-    ]
-    try:
-        resp = client.messages.create(
-            model=DEFAULT_MODEL,
-            max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": question}],
+        raise AIError(
+            f"No API key for provider '{provider}'. "
+            f"Run: cfo ai config --api-key ... --provider {provider}"
         )
-    except AIError:
-        raise
-    except Exception as e:
-        raise AIError(f"AI request failed: {e}")
-    return "".join(b.text for b in resp.content if getattr(b, "type", None) == "text").strip()
+    model = get_ai_model(provider) or PROVIDER_DEFAULT_MODEL[provider]
+    return complete(provider, api_key, model, SYSTEM_PROMPT, context, question, max_tokens)
 
 
 def analyze(focus: str = "all", date_from=None, date_to=None) -> str:

@@ -10,7 +10,7 @@ This file provides context to Claude Code when working on this repository.
 - Config (non-DB): `~/.cfo/config.json` (e.g. `base_currency`)
 - Stack: Python 3.10+, typer, rich, pydantic, sqlite3, reportlab (PDF), httpx (FX rates)
 - Repo: https://github.com/Neskys/cfo-cli
-- Current version: **0.7.0** (v0.1–v0.7 shipped — full roadmap complete)
+- Current version: **0.8.0** (v0.1–v0.7 roadmap complete; v0.8 adds OpenAI as an AI provider)
 
 ---
 
@@ -38,7 +38,8 @@ cfo/
 │   ├── forecast.py         # run() projection + scenario factors
 │   ├── forecast_scenario.py# custom scenario + adjustment CRUD
 │   ├── currency.py         # FX fetch/cache/convert + base-currency helpers
-│   └── ai.py               # aggregated context + Claude calls (prompt caching)
+│   ├── ai.py               # aggregated context + orchestration (provider-agnostic)
+│   └── ai_providers.py     # Anthropic / OpenAI completion adapters (lazy SDKs)
 ├── formatters/
 │   └── tables.py           # reusable Rich table builders
 ├── reports/
@@ -129,8 +130,9 @@ cfo currency convert --amount 1000 --from USD --to EUR
 cfo currency rates [--base EUR] [--refresh]
 cfo currency set-base EUR
 
-# AI insights (v0.7) — needs: pip install 'cfo-cli[ai]'
-cfo ai config --api-key sk-...
+# AI insights (v0.7; multi-provider since v0.8) — pip install 'cfo-cli[ai]' or [openai]
+cfo ai config --api-key sk-... [--provider anthropic|openai] [--model NAME]
+cfo ai set-provider anthropic|openai
 cfo ai analyze [--focus expenses|income|cashflow|all] [--from X] [--to X]
 cfo ai anomalies [--threshold 2.0] [--from X] [--to X]
 cfo ai suggest [--goal reduce-expenses|increase-cashflow|optimize-categories] [--from X] [--to X]
@@ -151,7 +153,8 @@ Declared in `pyproject.toml`. **Add new ones here and document them in this sect
 | `pandas` | v0.1 | (declared from the start) |
 | `reportlab` | v0.5 | PDF report generation (imported lazily so CSV works without it) |
 | `httpx` | v0.6 | fetch FX rates from open.er-api.com |
-| `anthropic` *(extra `[ai]`)* | v0.7 | Claude integration (lazy-imported; install via `pip install 'cfo-cli[ai]'`) |
+| `anthropic` *(extra `[ai]`)* | v0.7 | Claude integration (lazy-imported; `pip install 'cfo-cli[ai]'`) |
+| `openai` *(extra `[openai]`)* | v0.8 | OpenAI integration (lazy-imported; `pip install 'cfo-cli[openai]'`) |
 
 Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
 
@@ -167,11 +170,13 @@ Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
 - **v0.4 — Cash flow forecasting** — `run()` projects recurring income (6-mo avg) vs expenses (3-mo avg) with base/optimist/pessimist factors; custom scenarios + adjustments persisted
 - **v0.5 — Reports (CSV + PDF)** — `datasets` from services → `csv_writer` / `pdf_writer` (cover → tables → page numbers)
 - **v0.6 — Multi-currency** — `exchange_rates` cache (24h TTL, offline fallback), `convert`/`rates`/`set-base`, `--in-base-currency` on list/summary
-- **v0.7 — AI Insights (Claude)** — `ai config`/`analyze`/`anomalies`/`suggest` via the `anthropic` SDK (`[ai]` extra, lazy-imported). Sends **aggregated data only** (built from the summary services), **prompt-caches** the financial-context block, default model `claude-sonnet-4-6`, API key in `~/.cfo/config.json`. Tests mock the Anthropic client — no live calls.
+- **v0.7 — AI Insights (Claude)** — `ai config`/`analyze`/`anomalies`/`suggest` via the `anthropic` SDK (`[ai]` extra, lazy-imported). Sends **aggregated data only** (built from the summary services), **prompt-caches** the financial-context block, default model `claude-sonnet-4-6`, API key in `~/.cfo/config.json`. Tests mock the client — no live calls.
 
-### 🎉 Roadmap complete
+### Beyond the roadmap
 
-All planned versions (v0.1–v0.7) have shipped. Future work is open-ended — see GitHub issues.
+- **v0.8 — Multi-provider AI** — OpenAI alongside Claude, both via **API key** (no OAuth — the inference APIs are key-based). `ai_providers.py` adapts each SDK; `ai config --provider`, `ai set-provider`, per-provider key/model in `~/.cfo/config.json`. Anthropic uses explicit `cache_control`; OpenAI relies on automatic prefix caching (stable context sent first either way). Defaults: anthropic→`claude-sonnet-4-6`, openai→`gpt-4o`.
+
+Further work is open-ended — see GitHub issues.
 
 ---
 
