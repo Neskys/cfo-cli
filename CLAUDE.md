@@ -197,8 +197,9 @@ Further work is open-ended — see GitHub issues.
 ## Dev Setup
 
 ```bash
-# Install in editable mode
-pip install -e ".[dev]"
+# Install in editable mode (use the extras you need)
+pip install -e ".[dev]"             # core + test/lint tooling
+pip install -e ".[dev,ai,openai]"   # also pull the AI SDKs (Anthropic + OpenAI/Ollama)
 
 # Run CLI
 cfo --help
@@ -213,6 +214,23 @@ ruff check cfo/
 Notes:
 - Tests isolate the database/config by setting `HOME` to a `tmp_path`.
 - Network is never hit in tests: FX rates are mocked (`currency._fetch_rates`) or the cache is pre-seeded.
+- **Claude Code on the web:** `.claude/hooks/session-start.sh` (a `SessionStart` hook, web-only) runs `pip install -e ".[dev,ai,openai]"` so tests, linters, and every AI provider work from the first prompt. It also prints the active git branch as a reminder (see Git Workflow below).
+
+---
+
+## Git Workflow (branch discipline)
+
+This repo is developed on a **feature branch per task**, then merged into `main`.
+To avoid accidentally leaving uncommitted work — or commits — on `main`:
+
+1. **Always develop and commit on the feature branch**, never directly on `main`.
+2. After merging a feature into `main` and pushing, **switch back to the feature
+   branch** (`git checkout <feature-branch>`) before continuing — `git merge`
+   leaves you on `main`, which is the usual cause of stray work landing there.
+3. Before any commit, confirm the branch with `git rev-parse --abbrev-ref HEAD`.
+   The SessionStart hook echoes it at startup as a first-line reminder.
+4. Keep `main` in sync with `origin/main`; merge with `--no-ff` so each version
+   (v0.x) is a clear merge commit.
 
 ---
 
