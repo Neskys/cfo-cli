@@ -2,7 +2,7 @@
 
 > Know how far your business can fly.
 
-**cfo-cli** is an open-source command-line tool for freelancers, consultants, and small teams to manage budgets, track expenses, forecast cash flow, and get AI-powered financial insights — all from your terminal.
+**cfo-cli** is an open-source command-line tool for freelancers, consultants, and small teams to manage budgets, track expenses and income, forecast cash flow, export reports, and work across currencies — all from your terminal.
 
 **No SaaS subscriptions. No cloud lock-in. Your financial data stays on your machine.**
 
@@ -20,8 +20,8 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 
 - **CLI-first** — scriptable, git-friendly, fast
 - **Local-first** — SQLite database in `~/.cfo/`, zero cloud dependency
-- **AI-powered** — ask questions about your finances in plain language (Claude integration, coming in v0.5)
-- **Multi-currency** — EUR, USD, GBP, CHF and more
+- **Multi-currency** — EUR, USD, GBP, CHF and more, with cached exchange rates
+- **AI-powered** — ask questions about your finances in plain language (Claude integration, coming in v0.7)
 - **Open source** — MIT licensed, extensible, transparent
 
 ---
@@ -30,12 +30,13 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 
 | Feature | Status |
 |---|---|
-| 📋 Budget Planning | ✅ v0.1 |
-| 💸 Expense Tracking | 🔜 v0.2 |
-| 📈 Cash Flow Forecasting | 🔜 v0.3 |
-| 📄 CSV & PDF Reports | 🔜 v0.4 |
-| 🤖 AI Insights (Claude) | 🔜 v0.5 |
-| 🌍 Multi-currency | 🔜 v0.5 |
+| 📋 Budget planning | ✅ v0.1 |
+| 💸 Expense tracking | ✅ v0.2 |
+| 💰 Income tracking | ✅ v0.3 |
+| 📈 Cash flow forecasting | ✅ v0.4 |
+| 📄 CSV & PDF reports | ✅ v0.5 |
+| 🌍 Multi-currency | ✅ v0.6 |
+| 🤖 AI insights (Claude) | 🔜 v0.7 |
 
 ---
 
@@ -45,31 +46,19 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 pip install cfo-cli
 ```
 
-Requires Python 3.10+
+Requires Python 3.10+. Data is stored locally in `~/.cfo/data.db`; configuration in `~/.cfo/config.json`.
 
 ---
 
 ## Quick Start
 
-### Budget Planning
+### Budgets
 
 ```bash
-# Create a quarterly budget
-cfo budget create "Q3 2026" --period quarterly
-
-# Add line items
+cfo budget create "Q3 2026" --period quarterly          # monthly | quarterly | annual
 cfo budget add-line "Q3 2026" --category salaries --amount 5000 --currency EUR
-cfo budget add-line "Q3 2026" --category infrastructure --amount 300 --currency EUR
-cfo budget add-line "Q3 2026" --category marketing --amount 1000 --currency EUR
-cfo budget add-line "Q3 2026" --category freelancers --amount 2000 --currency EUR
-
-# View your budget
 cfo budget view "Q3 2026"
-
-# List all budgets
 cfo budget list
-
-# Delete a budget
 cfo budget delete "Q3 2026"
 ```
 
@@ -90,37 +79,77 @@ Example output for `cfo budget view "Q3 2026"`:
 ╰─────────────────┴──────────────┴──────────╯
 ```
 
+### Expenses
+
+```bash
+cfo expense add --category salaries --amount 4800 --budget "Q3 2026" --note "June payroll"
+cfo expense list --from 2026-06-01 --to 2026-06-30 --category salaries
+cfo expense summary --group-by category --budget "Q3 2026"   # % of total + budget execution
+cfo expense edit 1 --amount 5000
+cfo expense delete 1 --yes
+```
+
+### Income
+
+```bash
+cfo income source add --name "Acme Corp" --client "Acme" --recurring --recur-every monthly
+cfo income source list
+cfo income add --amount 3500 --source-id 1 --invoice-ref "INV-042"
+cfo income list
+cfo income summary --group-by source
+```
+
+### Cash flow forecasting
+
+```bash
+cfo forecast run --months 6 --scenario base          # base | optimist | pessimist
+cfo forecast scenario create --name "Best case" --from 2026-07-01 --to 2026-12-31
+cfo forecast scenario add-adjustment 1 --type income --factor 1.2
+cfo forecast scenario list
+```
+
+Projects recurring income (6-month average) against recent expenses (3-month average) and shows monthly net plus accumulated balance.
+
+### Reports
+
+```bash
+cfo report full --format pdf --output report.pdf        # cover + tables + page numbers
+cfo report expenses --from 2026-01-01 --format csv
+cfo report cashflow --output cashflow.csv
+```
+
+Report types: `expenses`, `income`, `cashflow`, `full`. Formats: `csv`, `pdf`.
+
+### Multi-currency
+
+```bash
+cfo currency set-base EUR
+cfo currency convert --amount 1000 --from USD --to EUR
+cfo currency rates --base EUR --refresh
+
+# Convert and aggregate any list/summary into your base currency:
+cfo expense summary --in-base-currency
+cfo income list --in-base-currency
+```
+
+Exchange rates come from [open.er-api.com](https://open.er-api.com) (free, no key), are cached for 24h in SQLite, and fall back to the last cached rate when offline.
+
 ---
 
 ## Roadmap
 
-### v0.2 — Expense Tracking
+### v0.7 — AI Insights (Claude)
+
+Optional dependency, installed via `pip install cfo-cli[ai]`.
+
 ```bash
-cfo expense add --category salaries --amount 4800 --currency EUR --date 2026-06-01
-cfo expense list --period this-month
-cfo expense compare "Q3 2026"   # Real vs. budget, % deviation
+cfo ai config --api-key sk-...
+cfo ai analyze --focus cashflow
+cfo ai anomalies --threshold 2.0
+cfo ai suggest --goal reduce-expenses
 ```
 
-### v0.3 — Cash Flow Forecasting
-```bash
-cfo forecast --months 6
-cfo forecast --months 6 --scenario optimistic    # +15% revenue
-cfo forecast --months 6 --scenario conservative  # -20% revenue
-```
-
-### v0.4 — Reports
-```bash
-cfo report summary --period Q3-2026
-cfo report export --format pdf
-cfo report export --format csv
-```
-
-### v0.5 — AI Insights (Claude)
-```bash
-cfo ai ask "What is my cash runway at current burn rate?"
-cfo ai insights          # Auto-generated monthly analysis
-cfo ai forecast-risk     # Flag financial risks
-```
+Sends **aggregated** data (not raw rows) to Claude and uses prompt caching to keep token usage low.
 
 ---
 
