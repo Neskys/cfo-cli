@@ -177,7 +177,16 @@ Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
 - **v0.8 — Multi-provider AI** — OpenAI alongside Claude, both via **API key** (no OAuth — the inference APIs are key-based). `ai_providers.py` adapts each SDK; `ai config --provider`, `ai set-provider`, per-provider key/model in `~/.cfo/config.json`. Anthropic uses explicit `cache_control`; OpenAI relies on automatic prefix caching (stable context sent first either way). Defaults: anthropic→`claude-sonnet-4-6`, openai→`gpt-4o`.
 - **v0.9 — Free local provider** — `local` provider runs **Gemma 4 via Ollama** at no cost, offline, **no API key**. It reuses the OpenAI-compatible adapter (`openai` SDK) pointed at a configurable `base_url` (default `http://localhost:11434/v1`), default model `gemma4`. No new pip dependency — needs the `[openai]` extra plus a separately-installed Ollama runtime. `KEY_REQUIRED` excludes `local`; `_complete` injects a placeholder key. Local servers have no server-side prompt caching (cost is zero anyway).
 
-Further work is open-ended — see GitHub issues.
+### Toward v1.0 (productization)
+
+With the feature roadmap complete, work shifted to hardening for a public release
+(see the *Continuous Integration & Releases* section below):
+
+- **CI** — `ci.yml` runs ruff + pytest on Python 3.10/3.11/3.12 for every PR/push.
+- **Coverage** — raised to **94%**; every `cfo/services/*` module is at 100%.
+- **Release pipeline** — `release.yml` publishes to PyPI via Trusted Publishing on a `v*.*.*` tag. License metadata modernised to PEP 639.
+
+Further feature work is open-ended — see GitHub issues.
 
 ---
 

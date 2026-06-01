@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Future work is open-ended.
+### Added
+- **Continuous integration** (`.github/workflows/ci.yml`): `ruff` + `pytest` on Python 3.10, 3.11 and 3.12 for every push to `main` and every PR.
+- **Release pipeline** (`.github/workflows/release.yml`): on a `v*.*.*` tag, build and publish to PyPI via **Trusted Publishing (OIDC — no stored token)**, gated on the test suite and a tag/version match check.
+- `SessionStart` hook for Claude Code on the web (`.claude/hooks/session-start.sh`) that installs the package with all extras and surfaces the active git branch.
+
+### Changed
+- License metadata modernised to **PEP 639** (`license = "MIT"` + `license-files`), emitting a clean `License-Expression`; removed the redundant `License ::` classifier.
+
+### Tests
+- Coverage raised from 89% to **94%**; every `cfo/services/*` module is now at 100% (added error/branch/edge-case tests across income, expense, currency, forecast and the AI providers).
 
 ## [0.9.0]
 

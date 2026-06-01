@@ -43,11 +43,23 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 
 ## Installation
 
+> **Heads-up:** PyPI publishing is configured (Trusted Publishing) and pending the first `v1.0.0` tag. Until then, install from source.
+
 ```bash
+# From PyPI (once published)
 pip install cfo-cli
+
+# …or from source (available today)
+git clone https://github.com/Neskys/cfo-cli.git
+cd cfo-cli
+pip install -e .
+
+# AI providers are optional extras (lazy-imported):
+pip install -e ".[ai]"        # Claude (Anthropic)
+pip install -e ".[openai]"    # OpenAI — also powers the free local Gemma/Ollama provider
 ```
 
-Requires Python 3.10+. Data is stored locally in `~/.cfo/data.db`; configuration in `~/.cfo/config.json`.
+Requires Python 3.10+ (tested on 3.10, 3.11 and 3.12). Data is stored locally in `~/.cfo/data.db`; configuration in `~/.cfo/config.json`.
 
 ---
 
@@ -174,7 +186,9 @@ cfo-cli sends only **aggregated** figures (totals and breakdowns, never individu
 
 ## Roadmap
 
-All planned versions (v0.1–v0.7) have shipped, plus v0.8 (OpenAI provider) and v0.9 (free local Gemma 4 via Ollama). 🎉 Future work is open-ended — feature requests and issues are welcome on [GitHub](https://github.com/Neskys/cfo-cli/issues).
+All planned versions (v0.1–v0.7) have shipped, plus v0.8 (OpenAI provider) and v0.9 (free local Gemma 4 via Ollama). 🎉
+
+The project is now **hardening toward v1.0**: continuous integration (ruff + pytest on Python 3.10–3.12), a test suite at **94% coverage** (every service module at 100%), and an automated PyPI release pipeline. Further feature work is open-ended — requests and issues are welcome on [GitHub](https://github.com/Neskys/cfo-cli/issues).
 
 ---
 
