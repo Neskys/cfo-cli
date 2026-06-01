@@ -7,7 +7,8 @@ name = "cfo-cli"
 version = "0.9.0"
 description = "Open-source financial CLI for freelancers, consultants, and small teams"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     {name = "Xavier Potrony", email = "xavipotrony@gmail.com"}
 ]
@@ -17,7 +18,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "Topic :: Office/Business :: Financial",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
