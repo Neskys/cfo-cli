@@ -10,7 +10,7 @@ This file provides context to Claude Code when working on this repository.
 - Config (non-DB): `~/.cfo/config.json` (e.g. `base_currency`)
 - Stack: Python 3.10+, typer, rich, pydantic, sqlite3, reportlab (PDF), httpx (FX rates)
 - Repo: https://github.com/Neskys/cfo-cli
-- Current version: **0.6.0** (v0.1–v0.6 shipped; v0.7 AI is the only stub left)
+- Current version: **0.7.0** (v0.1–v0.7 shipped — full roadmap complete)
 
 ---
 
@@ -26,7 +26,7 @@ cfo/
 │   ├── forecast.py         # ✅ v0.4 (run + nested `scenario` sub-app)
 │   ├── report.py           # ✅ v0.5
 │   ├── currency.py         # ✅ v0.6
-│   └── ai.py               # 🔜 v0.7 — stub only
+│   └── ai.py               # ✅ v0.7
 ├── core/
 │   ├── models.py           # pydantic models + VALID_* constants
 │   ├── config.py           # ~/.cfo/config.json read/write (base_currency)
@@ -37,7 +37,8 @@ cfo/
 │   ├── income_source.py    # income source CRUD
 │   ├── forecast.py         # run() projection + scenario factors
 │   ├── forecast_scenario.py# custom scenario + adjustment CRUD
-│   └── currency.py         # FX fetch/cache/convert + base-currency helpers
+│   ├── currency.py         # FX fetch/cache/convert + base-currency helpers
+│   └── ai.py               # aggregated context + Claude calls (prompt caching)
 ├── formatters/
 │   └── tables.py           # reusable Rich table builders
 ├── reports/
@@ -54,7 +55,8 @@ tests/
 ├── test_income.py
 ├── test_forecast.py
 ├── test_report.py
-└── test_currency.py
+├── test_currency.py
+└── test_ai.py
 ```
 
 ---
@@ -127,6 +129,12 @@ cfo currency convert --amount 1000 --from USD --to EUR
 cfo currency rates [--base EUR] [--refresh]
 cfo currency set-base EUR
 
+# AI insights (v0.7) — needs: pip install 'cfo-cli[ai]'
+cfo ai config --api-key sk-...
+cfo ai analyze [--focus expenses|income|cashflow|all] [--from X] [--to X]
+cfo ai anomalies [--threshold 2.0] [--from X] [--to X]
+cfo ai suggest [--goal reduce-expenses|increase-cashflow|optimize-categories] [--from X] [--to X]
+
 cfo version
 ```
 
@@ -143,7 +151,7 @@ Declared in `pyproject.toml`. **Add new ones here and document them in this sect
 | `pandas` | v0.1 | (declared from the start) |
 | `reportlab` | v0.5 | PDF report generation (imported lazily so CSV works without it) |
 | `httpx` | v0.6 | fetch FX rates from open.er-api.com |
-| `anthropic` *(extra `[ai]`)* | v0.7 (planned) | Claude integration |
+| `anthropic` *(extra `[ai]`)* | v0.7 | Claude integration (lazy-imported; install via `pip install 'cfo-cli[ai]'`) |
 
 Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
 
@@ -159,24 +167,11 @@ Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
 - **v0.4 — Cash flow forecasting** — `run()` projects recurring income (6-mo avg) vs expenses (3-mo avg) with base/optimist/pessimist factors; custom scenarios + adjustments persisted
 - **v0.5 — Reports (CSV + PDF)** — `datasets` from services → `csv_writer` / `pdf_writer` (cover → tables → page numbers)
 - **v0.6 — Multi-currency** — `exchange_rates` cache (24h TTL, offline fallback), `convert`/`rates`/`set-base`, `--in-base-currency` on list/summary
+- **v0.7 — AI Insights (Claude)** — `ai config`/`analyze`/`anomalies`/`suggest` via the `anthropic` SDK (`[ai]` extra, lazy-imported). Sends **aggregated data only** (built from the summary services), **prompt-caches** the financial-context block, default model `claude-sonnet-4-6`, API key in `~/.cfo/config.json`. Tests mock the Anthropic client — no live calls.
 
-### 🔜 v0.7 — AI Insights (Claude) — NEXT
+### 🎉 Roadmap complete
 
-Optional dependency: `anthropic` (extras: `pip install cfo-cli[ai]`).
-
-```bash
-cfo ai config --api-key sk-...
-cfo ai analyze [--from X] [--to X] [--focus expenses|income|cashflow|all]
-cfo ai anomalies [--threshold 2.0]
-cfo ai suggest [--goal reduce-expenses|increase-cashflow|optimize-categories]
-```
-
-Key design points:
-- Send **aggregated data (not raw rows)** to minimize tokens.
-- Use **prompt caching** for the financial context block.
-- Default model: `claude-sonnet-4-6`.
-- API key stored in `~/.cfo/config.json` (not the DB), like `base_currency`.
-- Tests must **mock** the Anthropic client — no live API calls in the suite.
+All planned versions (v0.1–v0.7) have shipped. Future work is open-ended — see GitHub issues.
 
 ---
 

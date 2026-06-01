@@ -31,3 +31,13 @@ def set_base_currency(currency: str) -> str:
     config["base_currency"] = currency.upper()
     _config_path().write_text(json.dumps(config, indent=2))
     return config["base_currency"]
+
+
+def get_api_key() -> str | None:
+    return load_config().get("anthropic_api_key")
+
+
+def set_api_key(api_key: str) -> None:
+    config = load_config()
+    config["anthropic_api_key"] = api_key
+    _config_path().write_text(json.dumps(config, indent=2))

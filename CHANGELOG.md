@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- v0.7 — AI insights (Claude): `ai config`, `ai analyze`, `ai anomalies`, `ai suggest`.
+- Roadmap complete (v0.1–v0.7). Future work is open-ended.
+
+## [0.7.0]
+
+### Added
+- AI insights via the Anthropic SDK (optional `[ai]` extra, lazy-imported).
+- `cfo ai config --api-key`, `cfo ai analyze --focus`, `cfo ai anomalies --threshold`, `cfo ai suggest --goal`.
+- Sends only aggregated data (built from the summary services), prompt-caches the financial-context block, default model `claude-sonnet-4-6`.
+- API key stored in `~/.cfo/config.json`.
 
 ## [0.6.0]
 
@@ -55,7 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cfo budget create|add-line|view|list|delete` and `cfo version`.
 - Local SQLite storage at `~/.cfo/data.db`.
 
-[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/Neskys/cfo-cli/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Neskys/cfo-cli/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Neskys/cfo-cli/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Neskys/cfo-cli/compare/v0.3.0...v0.4.0

@@ -21,7 +21,7 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 - **CLI-first** — scriptable, git-friendly, fast
 - **Local-first** — SQLite database in `~/.cfo/`, zero cloud dependency
 - **Multi-currency** — EUR, USD, GBP, CHF and more, with cached exchange rates
-- **AI-powered** — ask questions about your finances in plain language (Claude integration, coming in v0.7)
+- **AI-powered** — analyze your finances in plain language with Claude (`pip install 'cfo-cli[ai]'`)
 - **Open source** — MIT licensed, extensible, transparent
 
 ---
@@ -36,7 +36,7 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 | 📈 Cash flow forecasting | ✅ v0.4 |
 | 📄 CSV & PDF reports | ✅ v0.5 |
 | 🌍 Multi-currency | ✅ v0.6 |
-| 🤖 AI insights (Claude) | 🔜 v0.7 |
+| 🤖 AI insights (Claude) | ✅ v0.7 |
 
 ---
 
@@ -134,22 +134,26 @@ cfo income list --in-base-currency
 
 Exchange rates come from [open.er-api.com](https://open.er-api.com) (free, no key), are cached for 24h in SQLite, and fall back to the last cached rate when offline.
 
----
+### AI insights (Claude)
 
-## Roadmap
-
-### v0.7 — AI Insights (Claude)
-
-Optional dependency, installed via `pip install cfo-cli[ai]`.
+Install the optional extra and configure your Anthropic API key:
 
 ```bash
+pip install 'cfo-cli[ai]'
 cfo ai config --api-key sk-...
+
 cfo ai analyze --focus cashflow
 cfo ai anomalies --threshold 2.0
 cfo ai suggest --goal reduce-expenses
 ```
 
-Sends **aggregated** data (not raw rows) to Claude and uses prompt caching to keep token usage low.
+cfo-cli sends only **aggregated** figures (totals and breakdowns, never individual transactions) to Claude and uses prompt caching to keep token usage low. The default model is `claude-sonnet-4-6`; your API key is stored locally in `~/.cfo/config.json`.
+
+---
+
+## Roadmap
+
+All planned versions (v0.1–v0.7) have shipped. 🎉 Future work is open-ended — feature requests and issues are welcome on [GitHub](https://github.com/Neskys/cfo-cli/issues).
 
 ---
 
