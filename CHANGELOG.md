@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Future work is open-ended.
 
+## [0.9.0]
+
+### Added
+- Free local AI provider: **Gemma 4 via Ollama** — `cfo ai set-provider local`. No API key, no cost, offline.
+- Reuses the OpenAI-compatible adapter with a configurable `--base-url` (default `http://localhost:11434/v1`), default model `gemma4`.
+- `cfo ai config` now accepts an optional `--api-key` (not needed for `local`) plus `--base-url`.
+
+### Notes
+- No new pip dependency — the local provider uses the `[openai]` extra and a separately-installed Ollama runtime.
+
 ## [0.8.0]
 
 ### Added
@@ -75,7 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cfo budget create|add-line|view|list|delete` and `cfo version`.
 - Local SQLite storage at `~/.cfo/data.db`.
 
-[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/Neskys/cfo-cli/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/Neskys/cfo-cli/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Neskys/cfo-cli/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Neskys/cfo-cli/compare/v0.5.0...v0.6.0

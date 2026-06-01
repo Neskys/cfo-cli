@@ -10,7 +10,7 @@ This file provides context to Claude Code when working on this repository.
 - Config (non-DB): `~/.cfo/config.json` (e.g. `base_currency`)
 - Stack: Python 3.10+, typer, rich, pydantic, sqlite3, reportlab (PDF), httpx (FX rates)
 - Repo: https://github.com/Neskys/cfo-cli
-- Current version: **0.8.0** (v0.1–v0.7 roadmap complete; v0.8 adds OpenAI as an AI provider)
+- Current version: **0.9.0** (v0.1–v0.7 roadmap complete; v0.8 adds OpenAI; v0.9 adds a free local provider — Gemma 4 via Ollama)
 
 ---
 
@@ -130,9 +130,9 @@ cfo currency convert --amount 1000 --from USD --to EUR
 cfo currency rates [--base EUR] [--refresh]
 cfo currency set-base EUR
 
-# AI insights (v0.7; multi-provider since v0.8) — pip install 'cfo-cli[ai]' or [openai]
-cfo ai config --api-key sk-... [--provider anthropic|openai] [--model NAME]
-cfo ai set-provider anthropic|openai
+# AI insights (v0.7; multi-provider since v0.8; free local provider since v0.9)
+cfo ai config [--api-key sk-...] [--provider anthropic|openai|local] [--model NAME] [--base-url URL]
+cfo ai set-provider anthropic|openai|local   # 'local' = Gemma 4 via Ollama, no key, no cost
 cfo ai analyze [--focus expenses|income|cashflow|all] [--from X] [--to X]
 cfo ai anomalies [--threshold 2.0] [--from X] [--to X]
 cfo ai suggest [--goal reduce-expenses|increase-cashflow|optimize-categories] [--from X] [--to X]
@@ -175,6 +175,7 @@ Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
 ### Beyond the roadmap
 
 - **v0.8 — Multi-provider AI** — OpenAI alongside Claude, both via **API key** (no OAuth — the inference APIs are key-based). `ai_providers.py` adapts each SDK; `ai config --provider`, `ai set-provider`, per-provider key/model in `~/.cfo/config.json`. Anthropic uses explicit `cache_control`; OpenAI relies on automatic prefix caching (stable context sent first either way). Defaults: anthropic→`claude-sonnet-4-6`, openai→`gpt-4o`.
+- **v0.9 — Free local provider** — `local` provider runs **Gemma 4 via Ollama** at no cost, offline, **no API key**. It reuses the OpenAI-compatible adapter (`openai` SDK) pointed at a configurable `base_url` (default `http://localhost:11434/v1`), default model `gemma4`. No new pip dependency — needs the `[openai]` extra plus a separately-installed Ollama runtime. `KEY_REQUIRED` excludes `local`; `_complete` injects a placeholder key. Local servers have no server-side prompt caching (cost is zero anyway).
 
 Further work is open-ended — see GitHub issues.
 

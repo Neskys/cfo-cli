@@ -5,8 +5,10 @@ The financial-context block is sent first so it is cached cheaply (Anthropic pro
 caching / OpenAI automatic prefix caching). Provider-specific calls live in ai_providers.
 """
 
-from cfo.core.config import get_api_key, get_base_currency, get_provider, get_ai_model
-from cfo.services.ai_providers import AIError, complete, PROVIDER_DEFAULT_MODEL, VALID_PROVIDERS
+from cfo.core.config import get_api_key, get_base_currency, get_provider, get_ai_model, get_base_url
+from cfo.services.ai_providers import (
+    AIError, complete, PROVIDER_DEFAULT_MODEL, PROVIDER_DEFAULT_BASE_URL, KEY_REQUIRED, VALID_PROVIDERS,
+)
 
 __all__ = ["AIError", "VALID_PROVIDERS", "VALID_FOCUS", "VALID_GOALS",
            "analyze", "anomalies", "suggest", "build_context"]
@@ -59,13 +61,14 @@ def build_context(date_from=None, date_to=None) -> str:
 def _complete(context: str, question: str, max_tokens: int = 2048) -> str:
     provider = get_provider()
     api_key = get_api_key(provider)
-    if not api_key:
+    if not api_key and provider in KEY_REQUIRED:
         raise AIError(
             f"No API key for provider '{provider}'. "
             f"Run: cfo ai config --api-key ... --provider {provider}"
         )
     model = get_ai_model(provider) or PROVIDER_DEFAULT_MODEL[provider]
-    return complete(provider, api_key, model, SYSTEM_PROMPT, context, question, max_tokens)
+    base_url = get_base_url(provider) or PROVIDER_DEFAULT_BASE_URL.get(provider)
+    return complete(provider, api_key, model, SYSTEM_PROMPT, context, question, max_tokens, base_url)
 
 
 def analyze(focus: str = "all", date_from=None, date_to=None) -> str:
