@@ -8,7 +8,9 @@ the project and the conventions we follow.
 ```bash
 git clone https://github.com/Neskys/cfo-cli.git
 cd cfo-cli
-pip install -e ".[dev]"
+pip install -e ".[dev]"             # core + test/lint tooling
+# add the AI SDKs if you'll touch the `ai` command group:
+pip install -e ".[dev,ai,openai]"
 ```
 
 Run the CLI, tests, and linter:
@@ -16,8 +18,11 @@ Run the CLI, tests, and linter:
 ```bash
 cfo --help
 pytest tests/ -v
-ruff check cfo/
+ruff check cfo/ tests/
 ```
+
+> Working in Claude Code on the web? A `SessionStart` hook
+> (`.claude/hooks/session-start.sh`) installs everything above automatically.
 
 ## Project conventions
 
@@ -49,12 +54,20 @@ migration. **Never edit an existing migration** — add the next number.
 
 Tests must not hit the network. Isolate state by pointing `HOME` at a `tmp_path`,
 and mock exchange-rate fetches (`currency._fetch_rates`) or pre-seed the cache.
+The suite sits at ~94% coverage (every service module at 100%); please keep new
+service code covered.
+
+## Continuous integration
+
+Every pull request is checked by GitHub Actions (`.github/workflows/ci.yml`):
+`ruff check cfo/ tests/` plus the full `pytest` suite on Python 3.10, 3.11 and
+3.12. Run those locally before pushing so the PR goes green on the first try.
 
 ## Pull requests
 
 1. Fork the repo.
 2. Create a branch: `git checkout -b feat/my-feature`.
-3. Make your change with tests; ensure `pytest` and `ruff check cfo/` pass.
+3. Make your change with tests; ensure `pytest` and `ruff check cfo/ tests/` pass.
 4. Use [Conventional Commits](https://www.conventionalcommits.org/) for messages
    (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
 5. Update `CHANGELOG.md` under `[Unreleased]`.
