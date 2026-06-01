@@ -2,10 +2,13 @@
 
 from datetime import date
 
+import pytest
 from typer.testing import CliRunner
 
 from cfo.cli.main import app
-from cfo.storage.database import get_connection
+from cfo.storage.database import get_connection, init_db
+from cfo.services import expense as esvc
+from cfo.services.expense import ExpenseError
 
 runner = CliRunner()
 
@@ -119,6 +122,60 @@ def test_summary_by_month(tmp_path, monkeypatch):
     _add("--category", "y", "--amount", "30", "--date", "2026-02-05")
     result = runner.invoke(app, ["expense", "summary", "--group-by", "month"])
     assert "2026-01" in result.output and "2026-02" in result.output
+
+
+# --- service-level edge cases (validation, filters) ---
+
+
+def test_list_date_to_filter(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    esvc.add_expense("a", 10, on_date="2026-01-10")
+    esvc.add_expense("b", 20, on_date="2026-03-10")
+    assert len(esvc.list_expenses(date_to="2026-02-01")) == 1
+
+
+def test_edit_service_branches(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    esvc.add_expense("infra", 100)
+    esvc.edit_expense(1, category="Cloud", on_date="2026-03-03")
+    row = esvc.get_expense(1)
+    assert row["category"] == "cloud" and row["date"] == "2026-03-03"
+
+
+def test_edit_rejects_zero_amount(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    esvc.add_expense("infra", 100)
+    with pytest.raises(ExpenseError):
+        esvc.edit_expense(1, amount=0)
+
+
+def test_edit_and_delete_missing_expense_fail(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    init_db()
+    with pytest.raises(ExpenseError):
+        esvc.edit_expense(999, amount=5)
+    with pytest.raises(ExpenseError):
+        esvc.delete_expense(999)
+
+
+def test_summary_rejects_bad_group_by(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(ExpenseError):
+        esvc.summary(group_by="weekly")
+
+
+def test_summary_date_filters(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    esvc.add_expense("a", 10, on_date="2026-01-10")
+    esvc.add_expense("b", 40, on_date="2026-03-10")
+    result = esvc.summary(date_from="2026-02-01", date_to="2026-04-01")
+    assert result["total"] == 40
+
+
+def test_monthly_average_rejects_bad_window(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(ExpenseError):
+        esvc.get_monthly_average(months=0)
 
 
 def test_migrations_recorded(tmp_path, monkeypatch):

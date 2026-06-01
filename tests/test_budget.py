@@ -1,6 +1,5 @@
 """Tests for budget commands."""
 
-import pytest
 from typer.testing import CliRunner
 from cfo.cli.main import app
 
