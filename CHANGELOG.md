@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Roadmap complete (v0.1–v0.7). Future work is open-ended.
+- Future work is open-ended.
+
+## [0.8.0]
+
+### Added
+- Multi-provider AI: **OpenAI** alongside Claude, both via API key.
+- `cfo ai config --provider anthropic|openai [--model NAME]` and `cfo ai set-provider`.
+- Per-provider API key and model override in `~/.cfo/config.json`.
+- `services/ai_providers.py`: provider adapters (Anthropic `cache_control`; OpenAI automatic prefix caching). Default models: `claude-sonnet-4-6`, `gpt-4o`.
+- Optional dependency extra `[openai]`.
+
+### Notes
+- Authentication is by API key for both providers; neither inference API uses OAuth.
 
 ## [0.7.0]
 
@@ -63,7 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cfo budget create|add-line|view|list|delete` and `cfo version`.
 - Local SQLite storage at `~/.cfo/data.db`.
 
-[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/Neskys/cfo-cli/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Neskys/cfo-cli/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Neskys/cfo-cli/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Neskys/cfo-cli/compare/v0.4.0...v0.5.0

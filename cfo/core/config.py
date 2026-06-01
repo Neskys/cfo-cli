@@ -33,11 +33,43 @@ def set_base_currency(currency: str) -> str:
     return config["base_currency"]
 
 
-def get_api_key() -> str | None:
-    return load_config().get("anthropic_api_key")
+DEFAULT_PROVIDER = "anthropic"
 
 
-def set_api_key(api_key: str) -> None:
-    config = load_config()
-    config["anthropic_api_key"] = api_key
+def _save(config: dict) -> None:
     _config_path().write_text(json.dumps(config, indent=2))
+
+
+def get_provider() -> str:
+    return load_config().get("ai_provider", DEFAULT_PROVIDER)
+
+
+def set_provider(provider: str) -> None:
+    config = load_config()
+    config["ai_provider"] = provider
+    _save(config)
+
+
+def get_api_key(provider: str | None = None) -> str | None:
+    provider = provider or get_provider()
+    return load_config().get(f"{provider}_api_key")
+
+
+def set_api_key(api_key: str, provider: str | None = None) -> None:
+    provider = provider or get_provider()
+    config = load_config()
+    config[f"{provider}_api_key"] = api_key
+    _save(config)
+
+
+def get_ai_model(provider: str | None = None) -> str | None:
+    """Per-provider model override, or None to use the provider's default."""
+    provider = provider or get_provider()
+    return load_config().get(f"{provider}_model")
+
+
+def set_ai_model(model: str, provider: str | None = None) -> None:
+    provider = provider or get_provider()
+    config = load_config()
+    config[f"{provider}_model"] = model
+    _save(config)
