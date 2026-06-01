@@ -217,6 +217,47 @@ def test_local_adapter_uses_base_url_and_placeholder_key(monkeypatch):
     assert capture["api_key"] == "local"  # placeholder when no key configured
 
 
+def test_anthropic_api_failure_is_wrapped(monkeypatch):
+    class _Messages:
+        def create(self, **kwargs):
+            raise RuntimeError("boom")
+
+    class _FakeAnthropic:
+        def __init__(self, api_key=None):
+            self.messages = _Messages()
+
+    fake_mod = types.ModuleType("anthropic")
+    fake_mod.Anthropic = _FakeAnthropic
+    monkeypatch.setitem(sys.modules, "anthropic", fake_mod)
+
+    with pytest.raises(ai_providers.AIError, match="AI request failed"):
+        ai_providers.complete("anthropic", "k", "claude-sonnet-4-6", "SYS", "CTX", "Q")
+
+
+def test_openai_missing_package_is_wrapped(monkeypatch):
+    # Force `import openai` to fail even though it may be installed.
+    monkeypatch.setitem(sys.modules, "openai", None)
+    with pytest.raises(ai_providers.AIError, match="needs 'openai'"):
+        ai_providers._openai("k", "gpt-4o", "SYS", "CTX", "Q", 2048)
+
+
+def test_openai_api_failure_is_wrapped(monkeypatch):
+    class _Completions:
+        def create(self, **kwargs):
+            raise RuntimeError("boom")
+
+    class _FakeOpenAI:
+        def __init__(self, api_key=None, base_url=None):
+            self.chat = SimpleNamespace(completions=_Completions())
+
+    fake_mod = types.ModuleType("openai")
+    fake_mod.OpenAI = _FakeOpenAI
+    monkeypatch.setitem(sys.modules, "openai", fake_mod)
+
+    with pytest.raises(ai_providers.AIError, match="AI request failed"):
+        ai_providers.complete("openai", "k", "gpt-4o", "SYS", "CTX", "Q")
+
+
 def test_unknown_provider():
     with pytest.raises(ai_providers.AIError):
         ai_providers.complete("grok", "k", "m", "s", "c", "q")

@@ -2,11 +2,14 @@
 
 from datetime import date
 
+import pytest
 from typer.testing import CliRunner
 
 from cfo.cli.main import app
 from cfo.storage.database import get_connection
 from cfo.services import forecast as svc
+from cfo.services import forecast_scenario as fsvc
+from cfo.services.forecast import ForecastError
 
 runner = CliRunner()
 
@@ -105,6 +108,58 @@ def test_adjustment_requires_factor_or_delta(tmp_path, monkeypatch):
     )
     result = runner.invoke(app, ["forecast", "scenario", "add-adjustment", "1", "--type", "income"])
     assert result.exit_code != 0
+
+
+# --- service-level edge cases ---
+
+
+def test_run_rejects_bad_window(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(ForecastError):
+        svc.run(months=0)
+
+
+def test_run_rolls_over_year_boundary(tmp_path, monkeypatch):
+    _seed(monkeypatch, tmp_path)
+    data = svc.run(months=12)
+    assert len(data["rows"]) == 12
+    # projecting 12 months always crosses into the next calendar year
+    years = {row["month"][:4] for row in data["rows"]}
+    assert len(years) == 2
+
+
+def test_scenario_create_rejects_invalid_date(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(ForecastError):
+        fsvc.create_scenario("X", "2026-13-40", "2026-12-31")
+
+
+def test_scenario_duplicate_name_fails(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    fsvc.create_scenario("Dup", "2026-01-01", "2026-06-01")
+    with pytest.raises(ForecastError, match="already exists"):
+        fsvc.create_scenario("Dup", "2026-01-01", "2026-06-01")
+
+
+def test_get_and_delete_missing_scenario_fail(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(ForecastError):
+        fsvc.get_scenario(999)
+    with pytest.raises(ForecastError):
+        fsvc.delete_scenario(999)
+
+
+def test_add_adjustment_invalid_type_fails(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    fsvc.create_scenario("S", "2026-01-01", "2026-06-01")
+    with pytest.raises(ForecastError, match="Invalid type"):
+        fsvc.add_adjustment(1, "bogus", factor=1.1)
+
+
+def test_add_adjustment_missing_scenario_fails(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(ForecastError):
+        fsvc.add_adjustment(999, "income", factor=1.1)
 
 
 def test_migration_003_applied(tmp_path, monkeypatch):

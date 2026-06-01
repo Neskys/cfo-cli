@@ -105,6 +105,55 @@ def test_income_summary_in_base(home):
     assert result.exit_code == 0 and "50.00" in result.output
 
 
+# --- _fetch_rates network body (httpx mocked, never a real call) ---
+
+
+def test_fetch_rates_success(monkeypatch):
+    import httpx
+
+    class _Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"result": "success", "rates": {"EUR": 0.9, "GBP": 0.8}}
+
+    monkeypatch.setattr(httpx, "get", lambda url, timeout=10.0: _Resp())
+    assert currency._fetch_rates("USD") == {"EUR": 0.9, "GBP": 0.8}
+
+
+def test_fetch_rates_api_error(monkeypatch):
+    import httpx
+
+    class _Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"result": "error", "error-type": "unsupported-code"}
+
+    monkeypatch.setattr(httpx, "get", lambda url, timeout=10.0: _Resp())
+    with pytest.raises(currency.CurrencyError, match="Rate API error"):
+        currency._fetch_rates("USD")
+
+
+def test_fetch_rates_network_error(monkeypatch):
+    import httpx
+
+    def boom(url, timeout=10.0):
+        raise RuntimeError("connection refused")
+
+    monkeypatch.setattr(httpx, "get", boom)
+    with pytest.raises(currency.CurrencyError, match="Failed to fetch"):
+        currency._fetch_rates("USD")
+
+
+def test_get_rate_missing_quote_fails(home):
+    # USD rates are fetched (faked) but contain no JPY → no row available.
+    with pytest.raises(currency.CurrencyError, match="No exchange rate available"):
+        currency.get_rate("USD", "JPY")
+
+
 def test_migration_004_applied(home):
     runner.invoke(app, ["currency", "rates", "--base", "EUR"])
     with get_connection() as conn:

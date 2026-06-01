@@ -1,12 +1,14 @@
 """Tests for income commands and the income services."""
 
-from datetime import date
+from datetime import date, datetime
 
+import pytest
 from typer.testing import CliRunner
 
 from cfo.cli.main import app
-from cfo.storage.database import get_connection
+from cfo.storage.database import get_connection, init_db
 from cfo.services import income as svc
+from cfo.services.income_source import IncomeError, add_source
 
 runner = CliRunner()
 
@@ -125,6 +127,89 @@ def test_get_monthly_average(tmp_path, monkeypatch):
     _add("--amount", "600", "--source-id", "1", "--date", today.isoformat())
     # 1200 total over a 6-month window → 200/month
     assert svc.get_monthly_average(1, months=6) == 200.0
+
+
+# --- service-level edge cases (validation, filters, conversions) ---
+
+
+def test_add_entry_rejects_invalid_date(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(IncomeError):
+        svc.add_entry(100, on_date="2026-13-40")
+
+
+def test_add_entry_rejects_unknown_currency(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(IncomeError):
+        svc.add_entry(100, currency="XYZ")
+
+
+def test_list_entries_filters(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    svc.add_entry(10, source_id=None, on_date="2026-01-10")
+    sid = add_source("Acme")
+    svc.add_entry(20, source_id=sid, on_date="2026-03-10")
+    # date window + source filter each narrow the result set
+    assert len(svc.list_entries(date_from="2026-02-01")) == 1
+    assert len(svc.list_entries(date_to="2026-02-01")) == 1
+    assert len(svc.list_entries(source_id=sid)) == 1
+
+
+def test_list_entries_in_base(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    svc.add_entry(100, currency="USD")
+    now = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
+    with get_connection() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO exchange_rates VALUES ('USD', 'EUR', 0.5, ?)", (now,)
+        )
+    runner.invoke(app, ["currency", "set-base", "EUR"])
+    rows = svc.list_entries(in_base=True)
+    assert rows[0]["amount"] == 50.0 and rows[0]["currency"] == "EUR"
+
+
+def test_edit_entry_branches(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    svc.add_entry(100)
+    svc.edit_entry(1, on_date="2026-02-02", invoice_ref="INV-9")
+    row = svc.get_entry(1)
+    assert row["date"] == "2026-02-02" and row["invoice_ref"] == "INV-9"
+
+
+def test_edit_entry_rejects_zero_amount(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    svc.add_entry(100)
+    with pytest.raises(IncomeError):
+        svc.edit_entry(1, amount=0)
+
+
+def test_edit_and_delete_missing_entry_fail(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    init_db()
+    with pytest.raises(IncomeError):
+        svc.edit_entry(999, amount=5)
+    with pytest.raises(IncomeError):
+        svc.delete_entry(999)
+
+
+def test_summary_rejects_bad_group_by(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(IncomeError):
+        svc.summary(group_by="weekly")
+
+
+def test_summary_date_filters(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    svc.add_entry(10, on_date="2026-01-10")
+    svc.add_entry(40, on_date="2026-03-10")
+    result = svc.summary(date_from="2026-02-01", date_to="2026-04-01")
+    assert result["total"] == 40
+
+
+def test_monthly_average_rejects_bad_window(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    with pytest.raises(IncomeError):
+        svc.get_monthly_average(1, months=0)
 
 
 def test_migration_002_applied(tmp_path, monkeypatch):

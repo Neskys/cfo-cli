@@ -31,7 +31,7 @@ jobs:
         run: pip install -e ".[dev,ai,openai]"
 
       - name: Lint (ruff)
-        run: ruff check cfo/
+        run: ruff check cfo/ tests/
 
       - name: Test (pytest + coverage)
         run: pytest tests/ -v --cov=cfo --cov-report=term-missing
