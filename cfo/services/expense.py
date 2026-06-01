@@ -46,7 +46,7 @@ def add_expense(category, amount, currency="EUR", on_date=None, budget_name=None
         return cur.lastrowid
 
 
-def list_expenses(date_from=None, date_to=None, category=None, limit=50):
+def list_expenses(date_from=None, date_to=None, category=None, limit=50, in_base=False):
     init_db()
     clauses, params = [], []
     if date_from:
@@ -63,9 +63,14 @@ def list_expenses(date_from=None, date_to=None, category=None, limit=50):
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     params.append(limit)
     with get_connection() as conn:
-        return conn.execute(
+        rows = conn.execute(
             f"SELECT * FROM expenses{where} ORDER BY date DESC, id DESC LIMIT ?", params
         ).fetchall()
+    if in_base:
+        from cfo.services import currency
+        from cfo.core.config import get_base_currency
+        rows = currency.to_base_rows(rows, get_base_currency())
+    return rows
 
 
 def get_expense(expense_id: int):
@@ -112,10 +117,15 @@ def delete_expense(expense_id: int) -> None:
         conn.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
 
 
-def summary(date_from=None, date_to=None, group_by="category", budget_name=None) -> dict:
+def summary(date_from=None, date_to=None, group_by="category", budget_name=None, in_base=False) -> dict:
     if group_by not in ("category", "month"):
         raise ExpenseError("--group-by must be 'category' or 'month'.")
     init_db()
+    base = None
+    if in_base:
+        from cfo.services import currency
+        from cfo.core.config import get_base_currency
+        base = get_base_currency()
     clauses, params = [], []
     if date_from:
         _validate_date(date_from)
@@ -127,22 +137,29 @@ def summary(date_from=None, date_to=None, group_by="category", budget_name=None)
         params.append(date_to)
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     key_expr = "category" if group_by == "category" else "substr(date, 1, 7)"
+    cur_col = ", currency" if in_base else ""
     with get_connection() as conn:
-        grouped = conn.execute(
-            f"SELECT {key_expr} AS key, SUM(amount) AS amount, COUNT(*) AS count "
-            f"FROM expenses{where} GROUP BY key ORDER BY key",
+        raw = conn.execute(
+            f"SELECT {key_expr} AS key{cur_col}, SUM(amount) AS amount, COUNT(*) AS count "
+            f"FROM expenses{where} GROUP BY key{cur_col} ORDER BY key",
             params,
         ).fetchall()
         budget_lines, budget_total = {}, 0.0
         if budget_name:
             budget_id = _resolve_budget_id(conn, budget_name)
             for ln in conn.execute(
-                "SELECT category, SUM(amount) AS amount FROM budget_lines "
-                "WHERE budget_id = ? GROUP BY category",
+                f"SELECT category AS key{cur_col}, SUM(amount) AS amount, COUNT(*) AS count "
+                "FROM budget_lines WHERE budget_id = ? GROUP BY key" + cur_col,
                 (budget_id,),
             ):
-                budget_lines[ln["category"]] = ln["amount"]
-                budget_total += ln["amount"]
+                amt = currency.convert(ln["amount"], ln["currency"], base) if in_base else ln["amount"]
+                budget_lines[ln["key"]] = budget_lines.get(ln["key"], 0.0) + amt
+                budget_total += amt
+    if in_base:
+        collapsed = currency.collapse_to_base(raw, base)
+        grouped = [{"key": k, "amount": a, "count": c} for k, (a, c) in sorted(collapsed.items())]
+    else:
+        grouped = raw
     total = sum(r["amount"] for r in grouped) or 0.0
     rows = []
     for r in grouped:

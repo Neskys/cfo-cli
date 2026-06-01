@@ -78,10 +78,26 @@ def migration_003(conn: sqlite3.Connection) -> None:
     )
 
 
+def migration_004(conn: sqlite3.Connection) -> None:
+    """Add the exchange_rates cache table for multi-currency support."""
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS exchange_rates (
+            base_currency  TEXT NOT NULL,
+            quote_currency TEXT NOT NULL,
+            rate           REAL NOT NULL,
+            fetched_at     TEXT NOT NULL DEFAULT (datetime('now')),
+            PRIMARY KEY (base_currency, quote_currency)
+        );
+        """
+    )
+
+
 MIGRATIONS = {
     1: ("Add expense indexes", migration_001),
     2: ("Add income tables", migration_002),
     3: ("Add forecast tables", migration_003),
+    4: ("Add exchange rates table", migration_004),
 }
 
 

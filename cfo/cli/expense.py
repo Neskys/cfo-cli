@@ -6,13 +6,14 @@ from rich import box
 from rich.table import Table
 
 from cfo.services import expense as svc
+from cfo.services.currency import CurrencyError
 from cfo.formatters.tables import expenses_table, summary_table
 
 app = typer.Typer(help="Track real expenses and compare against your budget.")
 console = Console()
 
 
-def _fail(err: svc.ExpenseError):
+def _fail(err):
     console.print(f"[red]{err}[/red]")
     raise typer.Exit(1)
 
@@ -43,11 +44,12 @@ def expense_list(
     date_to: str = typer.Option(None, "--to", help="End date YYYY-MM-DD"),
     category: str = typer.Option(None, "--category", "-c", help="Filter by category"),
     limit: int = typer.Option(50, "--limit", help="Max rows to show"),
+    in_base: bool = typer.Option(False, "--in-base-currency", help="Convert amounts to base currency"),
 ):
     """List expenses, optionally filtered by date range and category."""
     try:
-        rows = svc.list_expenses(date_from, date_to, category, limit)
-    except svc.ExpenseError as e:
+        rows = svc.list_expenses(date_from, date_to, category, limit, in_base)
+    except (svc.ExpenseError, CurrencyError) as e:
         _fail(e)
     if not rows:
         console.print("[yellow]No expenses found.[/yellow] Add one with [bold]cfo expense add[/bold].")
@@ -111,11 +113,12 @@ def expense_summary(
     date_to: str = typer.Option(None, "--to", help="End date YYYY-MM-DD"),
     group_by: str = typer.Option("category", "--group-by", help="Group by category or month"),
     budget: str = typer.Option(None, "--budget", help="Compare against a budget by name"),
+    in_base: bool = typer.Option(False, "--in-base-currency", help="Convert amounts to base currency"),
 ):
     """Summarize expenses with % of total and optional budget execution."""
     try:
-        data = svc.summary(date_from, date_to, group_by, budget)
-    except svc.ExpenseError as e:
+        data = svc.summary(date_from, date_to, group_by, budget, in_base)
+    except (svc.ExpenseError, CurrencyError) as e:
         _fail(e)
     if not data["rows"]:
         console.print("[yellow]No expenses to summarize.[/yellow]")
