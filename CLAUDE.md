@@ -234,6 +234,27 @@ To avoid accidentally leaving uncommitted work — or commits — on `main`:
 
 ---
 
+## Continuous Integration & Releases
+
+Two GitHub Actions workflows live in `.github/workflows/`:
+
+- **`ci.yml`** — on every push to `main` and every PR: install with all extras,
+  `ruff check cfo/ tests/`, and `pytest` across Python 3.10/3.11/3.12.
+- **`release.yml`** — on pushing a `v*.*.*` tag: re-runs the test gate, verifies
+  the tag matches `cfo.__version__`, builds the sdist+wheel, `twine check`s them,
+  and publishes to **PyPI via Trusted Publishing (OIDC — no API token stored)**.
+
+To cut a release: bump `version` in both `pyproject.toml` **and** `cfo/__init__.py`
+(they must match — the workflow enforces it), commit, then
+`git tag vX.Y.Z && git push origin vX.Y.Z`. A PyPI version is permanent once
+published. First-time setup requires registering the trusted publisher on PyPI
+and creating a `pypi` GitHub Environment (steps are documented in `release.yml`).
+
+License metadata follows **PEP 639**: `license = "MIT"` + `license-files`
+(emitted as `License-Expression`), with no `License ::` classifier.
+
+---
+
 ## Migrations Pattern
 
 From v0.2 onwards, all schema changes go through `cfo/storage/migrations.py`.
