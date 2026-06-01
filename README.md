@@ -134,7 +134,7 @@ cfo income list --in-base-currency
 
 Exchange rates come from [open.er-api.com](https://open.er-api.com) (free, no key), are cached for 24h in SQLite, and fall back to the last cached rate when offline.
 
-### AI insights (Claude or OpenAI)
+### AI insights (Claude, OpenAI, or free local Gemma)
 
 Install the provider extra you want and configure an API key:
 
@@ -173,7 +173,7 @@ cfo-cli sends only **aggregated** figures (totals and breakdowns, never individu
 
 ## Roadmap
 
-All planned versions (v0.1–v0.7) have shipped. 🎉 Future work is open-ended — feature requests and issues are welcome on [GitHub](https://github.com/Neskys/cfo-cli/issues).
+All planned versions (v0.1–v0.7) have shipped, plus v0.8 (OpenAI provider) and v0.9 (free local Gemma 4 via Ollama). 🎉 Future work is open-ended — feature requests and issues are welcome on [GitHub](https://github.com/Neskys/cfo-cli/issues).
 
 ---
 
