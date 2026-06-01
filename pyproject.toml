@@ -45,6 +45,9 @@ ai = [
 openai = [
     "openai>=1.0",
 ]
+docs = [
+    "mkdocs-material>=9.5",
+]
 
 [project.scripts]
 cfo = "cfo.cli.main:app"

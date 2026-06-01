@@ -9,7 +9,11 @@ CLAUDE.md updates) if/when it's picked up.
 
 ## Interactive AI console (Claude Code-style REPL)
 
-**Status:** idea / not started · **Size:** large · **Best after:** v1.0
+**Status:** specified · **Size:** large · **Best after:** v1.0
+
+> Promoted to formal docs: see **[RFC-0001](rfcs/RFC-0001-interactive-console.md)**
+> (whether / options) and **[TS-0001](specs/TS-0001-interactive-console.md)**
+> (how to build). The summary below is kept for context.
 
 Turn cfo-cli from a one-shot CLI (`cfo <cmd>` runs and exits) into an optional
 **interactive, conversational console** — a `cfo chat` / `cfo shell` that stays
