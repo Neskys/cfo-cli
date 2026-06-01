@@ -188,6 +188,10 @@ With the feature roadmap complete, work shifted to hardening for a public releas
 
 Further feature work is open-ended — see GitHub issues.
 
+Candidate features that are *not* committed yet are parked in
+[`docs/IDEAS.md`](docs/IDEAS.md) (e.g. an interactive AI console / `cfo chat`
+REPL that drives the existing services as agent tools).
+
 ---
 
 ## Coding Rules
