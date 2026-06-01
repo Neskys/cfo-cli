@@ -132,7 +132,7 @@ There are no concurrent users or request load to scale. The relevant axis is
 | **Third-party input** | FX API responses are validated (`result == success`) before use; failures fall back to cache. |
 | **Dependencies** | Heavy/optional SDKs are lazy-imported and gated behind extras, shrinking the default attack surface. |
 
-Threat model details and vulnerability reporting: [`../../SECURITY.md`](../../SECURITY.md).
+Threat model details and vulnerability reporting: [SECURITY.md](https://github.com/Neskys/cfo-cli/blob/main/SECURITY.md).
 
 ## 7. Dependencies
 
@@ -149,6 +149,6 @@ Threat model details and vulnerability reporting: [`../../SECURITY.md`](../../SE
 
 ## 8. Cross-cutting decisions
 
-The "why" behind this design is recorded as ADRs — see [`../adr/`](../adr/)
+The "why" behind this design is recorded as ADRs — see [`../adr/`](../adr/README.md)
 (local-first SQLite, layered service architecture, numbered migrations,
 aggregated-only multi-provider AI, lazy SDK imports, PEP 639 + Trusted Publishing).

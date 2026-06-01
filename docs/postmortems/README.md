@@ -17,7 +17,7 @@ it. Every post-mortem centres on three things:
 
 ## Process
 
-1. Open a draft from [`../templates/POSTMORTEM-template.md`](../templates/POSTMORTEM-template.md),
+1. Open a draft from the [post-mortem template](https://github.com/Neskys/cfo-cli/blob/main/docs/templates/POSTMORTEM-template.md),
    named `POSTMORTEM-YYYY-MM-DD-short-title.md` in this folder.
 2. Fill the timeline while memory is fresh.
 3. Drive to root cause (the "5 whys" help).

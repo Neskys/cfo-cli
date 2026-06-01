@@ -1,0 +1,85 @@
+site_name: cfo-cli documentation
+site_description: Engineering and product documentation for cfo-cli.
+site_url: https://neskys.github.io/cfo-cli/
+repo_url: https://github.com/Neskys/cfo-cli
+repo_name: Neskys/cfo-cli
+docs_dir: docs
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.suggest
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - tables
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      permalink: true
+
+# Repo-root files (README, CONTRIBUTING, SECURITY, …) are linked as absolute
+# GitHub URLs, so they live outside docs_dir on purpose.
+validation:
+  omitted_files: warn
+  absolute_links: ignore
+  unrecognized_links: warn
+
+# Templates are copy-from scaffolding, not site content — kept in the repo and
+# linked via GitHub, excluded from the built site.
+exclude_docs: |
+  templates/
+
+nav:
+  - Doc types & process: README.md
+  - Product:
+      - PRD: prd/PRD.md
+  - Engineering:
+      - System design: design/SYSTEM_DESIGN.md
+      - "ADRs":
+          - Overview: adr/README.md
+          - ADR-0001 Local-first SQLite: adr/ADR-0001-local-first-sqlite.md
+          - ADR-0002 Layered service architecture: adr/ADR-0002-layered-service-architecture.md
+          - ADR-0003 Numbered migrations: adr/ADR-0003-numbered-migrations.md
+          - ADR-0004 Aggregated multi-provider AI: adr/ADR-0004-multi-provider-aggregated-ai.md
+          - ADR-0005 Lazy imports / extras: adr/ADR-0005-lazy-imports-optional-extras.md
+          - ADR-0006 PEP 639 + Trusted Publishing: adr/ADR-0006-pep639-trusted-publishing.md
+      - RFCs:
+          - RFC-0001 Interactive console: rfcs/RFC-0001-interactive-console.md
+      - Tech specs:
+          - TS-0001 Interactive console: specs/TS-0001-interactive-console.md
+  - Operations:
+      - Release runbook: runbooks/RELEASE.md
+      - Operations & support: runbooks/OPERATIONS.md
+      - Post-mortems: postmortems/README.md
+  - Reference:
+      - Glossary: GLOSSARY.md
+      - Future ideas: IDEAS.md

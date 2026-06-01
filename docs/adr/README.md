@@ -14,4 +14,4 @@ supersede, don't rewrite.
 | [0005](ADR-0005-lazy-imports-optional-extras.md) | Lazy SDK imports behind optional extras | Accepted |
 | [0006](ADR-0006-pep639-trusted-publishing.md) | PEP 639 license + PyPI Trusted Publishing | Accepted |
 
-New ADRs start from [`../templates/ADR-0000-template.md`](../templates/ADR-0000-template.md).
+New ADRs start from the [ADR template](https://github.com/Neskys/cfo-cli/blob/main/docs/templates/ADR-0000-template.md).

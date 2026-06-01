@@ -24,5 +24,5 @@ Domain and project terms used across cfo-cli and its documentation.
 | **Extra** | An optional dependency group (`[ai]`, `[openai]`, `[dev]`) installed on demand. |
 | **Trusted Publishing** | OIDC-based PyPI publishing with no stored token, used by the release workflow. |
 
-See also: [System Design](design/SYSTEM_DESIGN.md), [ADRs](adr/), and the command
-reference in the [README](../README.md).
+See also: [System Design](design/SYSTEM_DESIGN.md), [ADRs](adr/README.md), and the command
+reference in the [README](https://github.com/Neskys/cfo-cli/blob/main/README.md).

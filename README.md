@@ -184,6 +184,18 @@ cfo-cli sends only **aggregated** figures (totals and breakdowns, never individu
 
 ---
 
+## Documentation
+
+Beyond this README, engineering and product docs live in [`docs/`](docs/) and are
+published as a site (MkDocs + Material):
+
+- **[Documentation index](docs/README.md)** — what each doc type is and when to use it.
+- **[PRD](docs/prd/PRD.md)** · **[System Design](docs/design/SYSTEM_DESIGN.md)** · **[ADRs](docs/adr/README.md)** · **[Runbooks](docs/runbooks/RELEASE.md)** · **[Glossary](docs/GLOSSARY.md)**
+
+Contributors: see [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md).
+
+---
+
 ## Roadmap
 
 All planned versions (v0.1–v0.7) have shipped, plus v0.8 (OpenAI provider) and v0.9 (free local Gemma 4 via Ollama). 🎉

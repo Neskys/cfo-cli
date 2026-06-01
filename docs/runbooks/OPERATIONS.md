@@ -73,4 +73,4 @@ see [ADR-0003](../adr/ADR-0003-numbered-migrations.md)).
 ## Escalation
 
 Bugs → GitHub issues. Suspected security issues → follow
-[`../../SECURITY.md`](../../SECURITY.md) (do **not** open a public issue).
+[SECURITY.md](https://github.com/Neskys/cfo-cli/blob/main/SECURITY.md) (do **not** open a public issue).

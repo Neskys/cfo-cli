@@ -66,7 +66,7 @@ cfo forecast run --months 6
 cfo report full --format pdf --output report.pdf
 ```
 
-See the [README](../../README.md) for the full command reference.
+See the [README](https://github.com/Neskys/cfo-cli/blob/main/README.md) for the full command reference.
 
 ## Constraints & assumptions
 

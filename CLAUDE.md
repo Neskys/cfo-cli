@@ -157,6 +157,7 @@ Declared in `pyproject.toml`. **Add new ones here and document them in this sect
 | `openai` *(extra `[openai]`)* | v0.8 | OpenAI integration (lazy-imported; `pip install 'cfo-cli[openai]'`) |
 
 Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
+Docs extra (`[docs]`): `mkdocs-material` (builds the documentation site; see below).
 
 ---
 
@@ -249,13 +250,16 @@ To avoid accidentally leaving uncommitted work — or commits — on `main`:
 
 ## Continuous Integration & Releases
 
-Two GitHub Actions workflows live in `.github/workflows/`:
+Three GitHub Actions workflows live in `.github/workflows/`:
 
 - **`ci.yml`** — on every push to `main` and every PR: install with all extras,
   `ruff check cfo/ tests/`, and `pytest` across Python 3.10/3.11/3.12.
 - **`release.yml`** — on pushing a `v*.*.*` tag: re-runs the test gate, verifies
   the tag matches `cfo.__version__`, builds the sdist+wheel, `twine check`s them,
   and publishes to **PyPI via Trusted Publishing (OIDC — no API token stored)**.
+- **`docs.yml`** — on push to `main` touching `docs/**`/`mkdocs.yml`: builds the
+  MkDocs (Material) site with `mkdocs build --strict` and deploys to GitHub Pages.
+  Requires Pages source set to "GitHub Actions" (one-time, in repo Settings).
 
 To cut a release: bump `version` in both `pyproject.toml` **and** `cfo/__init__.py`
 (they must match — the workflow enforces it), commit, then
@@ -265,6 +269,11 @@ and creating a `pypi` GitHub Environment (steps are documented in `release.yml`)
 
 License metadata follows **PEP 639**: `license = "MIT"` + `license-files`
 (emitted as `License-Expression`), with no `License ::` classifier.
+
+Engineering & product documentation lives in [`docs/`](docs/) (PRD, RFCs, ADRs,
+Tech Specs, System Design, runbooks, post-mortems, glossary) — see
+[`docs/README.md`](docs/README.md) for what each type is and when to use it.
+Preview the site locally with `pip install -e ".[docs]" && mkdocs serve`.
 
 ---
 
