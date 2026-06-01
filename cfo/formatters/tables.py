@@ -25,6 +25,54 @@ def expenses_table(rows) -> Table:
     return table
 
 
+def sources_table(rows) -> Table:
+    """Build a table listing income sources with entry counts and totals."""
+    table = Table(title="Income sources", box=box.SIMPLE_HEAD)
+    table.add_column("ID", justify="right", style="dim")
+    table.add_column("Name", style="bold cyan")
+    table.add_column("Client", style="dim")
+    table.add_column("Recurring", justify="center")
+    table.add_column("Entries", justify="right")
+    table.add_column("Total", justify="right", style="green")
+    for r in rows:
+        recur = r["recur_every"] if r["is_recurring"] else "—"
+        table.add_row(
+            str(r["id"]), r["name"], r["client"] or "—",
+            recur, str(r["entries"]), f"{r['total']:,.2f}",
+        )
+    return table
+
+
+def income_table(rows) -> Table:
+    """Build a table listing individual income entries."""
+    table = Table(title="Income", box=box.SIMPLE_HEAD)
+    table.add_column("ID", justify="right", style="dim")
+    table.add_column("Date", style="cyan")
+    table.add_column("Source")
+    table.add_column("Amount", justify="right", style="green")
+    table.add_column("Cur", justify="center")
+    table.add_column("Invoice", style="dim")
+    for r in rows:
+        table.add_row(
+            str(r["id"]), r["date"], r["source_name"] or "—",
+            f"{r['amount']:,.2f}", r["currency"], r["invoice_ref"] or "",
+        )
+    return table
+
+
+def income_summary_table(data: dict) -> Table:
+    """Build a grouped income summary table with % of total."""
+    group_by = data["group_by"]
+    header = "Source" if group_by == "source" else "Month"
+    table = Table(title=f"Income summary by {group_by}", box=box.ROUNDED, show_footer=True)
+    table.add_column(header, style="cyan", footer="TOTAL")
+    table.add_column("Amount", justify="right", style="green", footer=f"{data['total']:,.2f}")
+    table.add_column("% total", justify="right")
+    for row in data["rows"]:
+        table.add_row(row["key"], f"{row['amount']:,.2f}", f"{row['pct']:.1f}%")
+    return table
+
+
 def summary_table(data: dict) -> Table:
     """Build a grouped summary table with % of total and optional budget execution.
 

@@ -19,8 +19,39 @@ def migration_001(conn: sqlite3.Connection) -> None:
     )
 
 
+def migration_002(conn: sqlite3.Connection) -> None:
+    """Add income tables (sources + entries) with supporting indexes."""
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS income_sources (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            name         TEXT    NOT NULL UNIQUE,
+            client       TEXT,
+            is_recurring INTEGER NOT NULL DEFAULT 0,
+            recur_every  TEXT,
+            created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS income_entries (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_id   INTEGER REFERENCES income_sources(id) ON DELETE SET NULL,
+            amount      REAL    NOT NULL,
+            currency    TEXT    NOT NULL DEFAULT 'EUR',
+            date        TEXT    NOT NULL DEFAULT (date('now')),
+            invoice_ref TEXT,
+            note        TEXT,
+            created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_income_entries_date   ON income_entries(date);
+        CREATE INDEX IF NOT EXISTS idx_income_entries_source ON income_entries(source_id);
+        """
+    )
+
+
 MIGRATIONS = {
     1: ("Add expense indexes", migration_001),
+    2: ("Add income tables", migration_002),
 }
 
 
