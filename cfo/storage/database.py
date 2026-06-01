@@ -3,6 +3,8 @@
 import sqlite3
 from pathlib import Path
 
+from cfo.storage.migrations import apply_migrations
+
 
 def get_db_path() -> Path:
     """Return the path to the local database file (~/.cfo/data.db)."""
@@ -49,3 +51,4 @@ def init_db() -> None:
                 created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
             );
         """)
+        apply_migrations(conn)
