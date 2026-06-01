@@ -4,6 +4,7 @@ from datetime import date as date_cls
 
 from cfo.storage.database import get_connection, init_db
 from cfo.core.models import VALID_CURRENCIES
+from cfo.core.dates import window_cutoff
 
 
 class ExpenseError(Exception):
@@ -160,3 +161,17 @@ def summary(date_from=None, date_to=None, group_by="category", budget_name=None)
                 entry["execution"] = r["amount"] / ref * 100
         rows.append(entry)
     return {"group_by": group_by, "rows": rows, "total": total, "has_budget": bool(budget_name)}
+
+
+def get_monthly_average(months=3) -> float:
+    """Average total monthly expense over the last `months` months (forecast input)."""
+    if months <= 0:
+        raise ExpenseError("months must be greater than zero.")
+    init_db()
+    cutoff = window_cutoff(months)
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE date >= ?",
+            (cutoff,),
+        ).fetchone()
+    return row["total"] / months

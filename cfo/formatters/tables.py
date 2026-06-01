@@ -73,6 +73,42 @@ def income_summary_table(data: dict) -> Table:
     return table
 
 
+def forecast_table(data: dict) -> Table:
+    """Build the cash-flow projection table (negative net/balance in red)."""
+    table = Table(title=f"Cash flow forecast — {data['scenario']}", box=box.ROUNDED)
+    table.add_column("Mes", style="cyan")
+    table.add_column("Ingressos", justify="right", style="green")
+    table.add_column("Despeses", justify="right", style="red")
+    table.add_column("Net", justify="right")
+    table.add_column("Balanç acumulat", justify="right")
+    for r in data["rows"]:
+        net_style = "green" if r["net"] >= 0 else "red"
+        bal_style = "green" if r["balance"] >= 0 else "red"
+        table.add_row(
+            r["month"],
+            f"{r['income']:,.2f}",
+            f"{r['expense']:,.2f}",
+            f"[{net_style}]{r['net']:,.2f}[/{net_style}]",
+            f"[{bal_style}]{r['balance']:,.2f}[/{bal_style}]",
+        )
+    return table
+
+
+def scenarios_table(rows) -> Table:
+    """Build a table listing custom forecast scenarios."""
+    table = Table(title="Forecast scenarios", box=box.SIMPLE_HEAD)
+    table.add_column("ID", justify="right", style="dim")
+    table.add_column("Name", style="bold cyan")
+    table.add_column("From", style="dim")
+    table.add_column("To", style="dim")
+    table.add_column("Adjustments", justify="right")
+    for r in rows:
+        table.add_row(
+            str(r["id"]), r["name"], r["period_from"], r["period_to"], str(r["adjustments"])
+        )
+    return table
+
+
 def summary_table(data: dict) -> Table:
     """Build a grouped summary table with % of total and optional budget execution.
 

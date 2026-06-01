@@ -1,3 +1,3 @@
 """cfo-cli — Open-source financial CLI for freelancers and small teams."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

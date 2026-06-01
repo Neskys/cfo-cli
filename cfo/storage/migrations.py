@@ -49,9 +49,39 @@ def migration_002(conn: sqlite3.Connection) -> None:
     )
 
 
+def migration_003(conn: sqlite3.Connection) -> None:
+    """Add forecast scenario tables for cash-flow projection."""
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS forecast_scenarios (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            name        TEXT    NOT NULL UNIQUE,
+            period_from TEXT    NOT NULL,
+            period_to   TEXT    NOT NULL,
+            created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS forecast_adjustments (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            scenario_id    INTEGER NOT NULL REFERENCES forecast_scenarios(id) ON DELETE CASCADE,
+            type           TEXT    NOT NULL,
+            category       TEXT,
+            factor         REAL,
+            absolute_delta REAL,
+            note           TEXT,
+            created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_forecast_adj_scenario
+            ON forecast_adjustments(scenario_id);
+        """
+    )
+
+
 MIGRATIONS = {
     1: ("Add expense indexes", migration_001),
     2: ("Add income tables", migration_002),
+    3: ("Add forecast tables", migration_003),
 }
 
 
