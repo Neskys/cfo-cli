@@ -41,7 +41,7 @@ def add_entry(amount, source_id=None, currency="EUR", on_date=None, invoice_ref=
         return cur.lastrowid
 
 
-def list_entries(date_from=None, date_to=None, source_id=None, limit=50):
+def list_entries(date_from=None, date_to=None, source_id=None, limit=50, in_base=False):
     init_db()
     clauses, params = [], []
     if date_from:
@@ -58,12 +58,17 @@ def list_entries(date_from=None, date_to=None, source_id=None, limit=50):
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     params.append(limit)
     with get_connection() as conn:
-        return conn.execute(
+        rows = conn.execute(
             "SELECT e.*, s.name AS source_name FROM income_entries e "
             f"LEFT JOIN income_sources s ON s.id = e.source_id{where} "
             "ORDER BY e.date DESC, e.id DESC LIMIT ?",
             params,
         ).fetchall()
+    if in_base:
+        from cfo.services import currency
+        from cfo.core.config import get_base_currency
+        rows = currency.to_base_rows(rows, get_base_currency())
+    return rows
 
 
 def get_entry(entry_id: int):
@@ -114,10 +119,15 @@ def delete_entry(entry_id: int) -> None:
         conn.execute("DELETE FROM income_entries WHERE id = ?", (entry_id,))
 
 
-def summary(date_from=None, date_to=None, group_by="source") -> dict:
+def summary(date_from=None, date_to=None, group_by="source", in_base=False) -> dict:
     if group_by not in ("source", "month"):
         raise IncomeError("--group-by must be 'source' or 'month'.")
     init_db()
+    base = None
+    if in_base:
+        from cfo.services import currency
+        from cfo.core.config import get_base_currency
+        base = get_base_currency()
     clauses, params = [], []
     if date_from:
         _validate_date(date_from)
@@ -134,12 +144,19 @@ def summary(date_from=None, date_to=None, group_by="source") -> dict:
     else:
         key_expr = "substr(e.date, 1, 7)"
         join = ""
+    cur_col = ", e.currency AS currency" if in_base else ""
+    group_extra = ", e.currency" if in_base else ""
     with get_connection() as conn:
-        grouped = conn.execute(
-            f"SELECT {key_expr} AS key, SUM(e.amount) AS amount, COUNT(*) AS count "
-            f"FROM income_entries e{join}{where} GROUP BY key ORDER BY key",
+        raw = conn.execute(
+            f"SELECT {key_expr} AS key{cur_col}, SUM(e.amount) AS amount, COUNT(*) AS count "
+            f"FROM income_entries e{join}{where} GROUP BY key{group_extra} ORDER BY key",
             params,
         ).fetchall()
+    if in_base:
+        collapsed = currency.collapse_to_base(raw, base)
+        grouped = [{"key": k, "amount": a, "count": c} for k, (a, c) in sorted(collapsed.items())]
+    else:
+        grouped = raw
     total = sum(r["amount"] for r in grouped) or 0.0
     rows = [
         {

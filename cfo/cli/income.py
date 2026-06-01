@@ -8,6 +8,7 @@ from rich.table import Table
 from cfo.services import income as svc
 from cfo.services import income_source as src_svc
 from cfo.services.income_source import IncomeError
+from cfo.services.currency import CurrencyError
 from cfo.formatters.tables import sources_table, income_table, income_summary_table
 
 app = typer.Typer(help="Track income sources and revenue entries.")
@@ -84,11 +85,12 @@ def income_list(
     date_to: str = typer.Option(None, "--to", help="End date YYYY-MM-DD"),
     source_id: int = typer.Option(None, "--source-id", help="Filter by source ID"),
     limit: int = typer.Option(50, "--limit", help="Max rows to show"),
+    in_base: bool = typer.Option(False, "--in-base-currency", help="Convert amounts to base currency"),
 ):
     """List income entries, optionally filtered."""
     try:
-        rows = svc.list_entries(date_from, date_to, source_id, limit)
-    except IncomeError as e:
+        rows = svc.list_entries(date_from, date_to, source_id, limit, in_base)
+    except (IncomeError, CurrencyError) as e:
         _fail(e)
     if not rows:
         console.print("[yellow]No income entries.[/yellow] Add one with [bold]cfo income add[/bold].")
@@ -151,11 +153,12 @@ def income_summary(
     date_from: str = typer.Option(None, "--from", help="Start date YYYY-MM-DD"),
     date_to: str = typer.Option(None, "--to", help="End date YYYY-MM-DD"),
     group_by: str = typer.Option("source", "--group-by", help="Group by source or month"),
+    in_base: bool = typer.Option(False, "--in-base-currency", help="Convert amounts to base currency"),
 ):
     """Summarize income with % of total."""
     try:
-        data = svc.summary(date_from, date_to, group_by)
-    except IncomeError as e:
+        data = svc.summary(date_from, date_to, group_by, in_base)
+    except (IncomeError, CurrencyError) as e:
         _fail(e)
     if not data["rows"]:
         console.print("[yellow]No income to summarize.[/yellow]")
