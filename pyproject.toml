@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cfo-cli"
-version = "0.6.0"
+version = "0.7.0"
 description = "Open-source financial CLI for freelancers, consultants, and small teams"
 readme = "README.md"
 license = {text = "MIT"}
