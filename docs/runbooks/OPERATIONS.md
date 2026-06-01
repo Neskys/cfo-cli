@@ -61,6 +61,22 @@ see [ADR-0003](../adr/ADR-0003-numbered-migrations.md)).
 - **A migration errored mid-run:** restore the backup, reproduce against a copy,
   fix the migration *as a new number* (never edit a shipped one), ship a patch.
 
+## Documentation site (GitHub Pages)
+
+The docs site is built and deployed by `.github/workflows/docs.yml` on pushes to
+`main` that touch `docs/**` or `mkdocs.yml`.
+
+- **One-time setup (required before the first deploy):** repo → Settings → Pages
+  → "Build and deployment" → **Source: "GitHub Actions"**. Until this is set, the
+  `build` job succeeds but the `deploy` job fails with `404 — Ensure GitHub Pages
+  has been enabled`. That failure is expected pre-setup, not a workflow bug.
+- **After enabling:** re-run the failed workflow (Actions → Docs → *Re-run jobs*)
+  or push any `docs/**` change; the site publishes to
+  `https://neskys.github.io/cfo-cli/`.
+- **Build fails (not deploy):** reproduce locally with
+  `pip install -e ".[docs]" && mkdocs build --strict` and fix the reported
+  warning (broken link, page missing from nav, …).
+
 ## Common failures
 
 | Symptom (user report) | Likely cause | Action |
