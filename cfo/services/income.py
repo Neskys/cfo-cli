@@ -4,6 +4,7 @@ from datetime import date as date_cls
 
 from cfo.storage.database import get_connection, init_db
 from cfo.core.models import VALID_CURRENCIES
+from cfo.core.dates import window_cutoff
 from cfo.services.income_source import IncomeError
 
 
@@ -160,12 +161,7 @@ def get_monthly_average(source_id, months=6) -> float:
     if months <= 0:
         raise IncomeError("months must be greater than zero.")
     init_db()
-    today = date_cls.today()
-    year, month = today.year, today.month - (months - 1)
-    while month <= 0:
-        month += 12
-        year -= 1
-    cutoff = date_cls(year, month, 1).isoformat()
+    cutoff = window_cutoff(months)
     with get_connection() as conn:
         row = conn.execute(
             "SELECT COALESCE(SUM(amount), 0) AS total FROM income_entries "

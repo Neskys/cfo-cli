@@ -7,6 +7,8 @@ from pydantic import BaseModel, Field
 VALID_PERIODS = ("monthly", "quarterly", "annual")
 VALID_CURRENCIES = ("EUR", "USD", "GBP", "CHF", "CAD", "AUD", "JPY")
 VALID_RECUR_INTERVALS = ("weekly", "monthly", "quarterly", "annual")
+VALID_SCENARIOS = ("base", "optimist", "pessimist")
+VALID_ADJUSTMENT_TYPES = ("income", "expense")
 
 
 class BudgetLine(BaseModel):
@@ -61,5 +63,24 @@ class IncomeEntry(BaseModel):
     currency: str = "EUR"
     date: str
     invoice_ref: str | None = None
+    note: str | None = None
+    created_at: datetime | None = None
+
+
+class ForecastScenario(BaseModel):
+    id: int | None = None
+    name: str
+    period_from: str
+    period_to: str
+    created_at: datetime | None = None
+
+
+class ForecastAdjustment(BaseModel):
+    id: int | None = None
+    scenario_id: int | None = None
+    type: str
+    category: str | None = None
+    factor: float | None = None
+    absolute_delta: float | None = None
     note: str | None = None
     created_at: datetime | None = None
