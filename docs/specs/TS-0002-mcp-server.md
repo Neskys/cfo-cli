@@ -1,6 +1,6 @@
 # TS-0002: Model Context Protocol (MCP) Server — Technical Specification
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Author(s):** Xavier Potrony, Jarvis
 - **Created:** 2026-07-01
 - **Related:** [RFC-0002](../rfcs/RFC-0002-mcp-server.md), [ADR-0007](../adr/ADR-0007-mcp-authorization-safety.md)

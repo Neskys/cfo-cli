@@ -1,6 +1,6 @@
 # RFC-0002: Model Context Protocol (MCP) Server
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Author(s):** Xavier Potrony, Jarvis
 - **Created:** 2026-07-01
 - **Discussion:** (open a PR/issue to discuss)

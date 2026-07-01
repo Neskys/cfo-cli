@@ -1,6 +1,6 @@
 # ADR-0007: MCP Authorization & Safety Model
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-07-01
 - **Deciders:** Xavier Potrony, Jarvis
 

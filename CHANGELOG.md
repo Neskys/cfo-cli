@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-01
+
 ### Added
+- **Model Context Protocol (MCP) Server**: Start a stdio-based JSON-RPC server exposing all cfo services as tools to AI assistants like Claude Desktop, Cursor, and Zed.
+  - Subcommands: `cfo mcp start` (launches stdio server) and `cfo mcp config` (toggles read-write permissions).
+  - Exposure of 8 read tools (`expense_list`, `expense_summary`, `income_list`, `income_summary`, `budget_list`, `budget_view`, `forecast_run`, `currency_convert`).
+  - Exposure of 3 write tools (`expense_add`, `income_add`, `budget_create`).
+  - Optional dependency extra `[mcp]`.
+- **Security Model (ADR-0007)**: Read-Only mode by default. Write tools are blocked unless explicitly configured via `"mcp_read_write": true` in `~/.cfo/config.json` or by passing the `--read-write` flag to `cfo mcp start`.
+- **Layered Service Architecture for Budgets**: Extracted database budget logic from the CLI layer into `cfo/services/budget.py` and refactored `cfo/cli/budget.py` to use it (conforming fully to ADR-0002).
+
+### Changed
+- CLI entrypoint registers the new `mcp` sub-app.
+
+### Tests
+- Comprehensive MCP test suite (`tests/test_mcp.py`) checking read tools, write safety guardrails, and CLI configuration/start commands.
+
 - **Continuous integration** (`.github/workflows/ci.yml`): `ruff` + `pytest` on Python 3.10, 3.11 and 3.12 for every push to `main` and every PR.
 - **Release pipeline** (`.github/workflows/release.yml`): on a `v*.*.*` tag, build and publish to PyPI via **Trusted Publishing (OIDC — no stored token)**, gated on the test suite and a tag/version match check.
 - `SessionStart` hook for Claude Code on the web (`.claude/hooks/session-start.sh`) that installs the package with all extras and surfaces the active git branch.
