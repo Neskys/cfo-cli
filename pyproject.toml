@@ -45,6 +45,9 @@ ai = [
 openai = [
     "openai>=1.0",
 ]
+mcp = [
+    "mcp>=0.1.0",
+]
 docs = [
     "mkdocs-material>=9.5",
 ]

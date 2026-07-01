@@ -1,7 +1,7 @@
 """Main CLI entrypoint."""
 
 import typer
-from cfo.cli import budget, expense, income, forecast, report, currency, ai
+from cfo.cli import budget, expense, income, forecast, report, currency, ai, mcp
 
 app = typer.Typer(
     name="cfo",
@@ -19,6 +19,7 @@ app.add_typer(forecast.app, name="forecast")
 app.add_typer(report.app, name="report")
 app.add_typer(currency.app, name="currency")
 app.add_typer(ai.app, name="ai")
+app.add_typer(mcp.app, name="mcp")
 
 
 @app.command("version")
