@@ -86,3 +86,13 @@ def set_base_url(base_url: str, provider: str | None = None) -> None:
     config = load_config()
     config[f"{provider}_base_url"] = base_url
     _save(config)
+
+
+def get_mcp_read_write() -> bool:
+    return load_config().get("mcp_read_write", False)
+
+
+def set_mcp_read_write(enabled: bool) -> None:
+    config = load_config()
+    config["mcp_read_write"] = enabled
+    _save(config)

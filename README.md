@@ -38,6 +38,7 @@ Freelancers and small-team CFOs spend 5–10 hours per month manually reconcilin
 | 📄 CSV & PDF reports | ✅ v0.5 |
 | 🌍 Multi-currency | ✅ v0.6 |
 | 🤖 AI insights (Claude / OpenAI / local Gemma) | ✅ v0.7 · v0.8 · v0.9 |
+| 🔌 Model Context Protocol (MCP) Server | ✅ v0.10 |
 
 ---
 
@@ -54,9 +55,11 @@ git clone https://github.com/Neskys/cfo-cli.git
 cd cfo-cli
 pip install -e .
 
-# AI providers are optional extras (lazy-imported):
+# AI and MCP providers are optional extras (lazy-imported):
 pip install -e ".[ai]"        # Claude (Anthropic)
 pip install -e ".[openai]"    # OpenAI — also powers the free local Gemma/Ollama provider
+pip install -e ".[mcp]"       # Model Context Protocol (MCP) server
+pip install -e ".[dev,ai,openai,mcp]" # Development setup with all extras
 ```
 
 Requires Python 3.10+ (tested on 3.10, 3.11 and 3.12). Data is stored locally in `~/.cfo/data.db`; configuration in `~/.cfo/config.json`.
@@ -181,6 +184,57 @@ cfo ai analyze --focus cashflow      # runs entirely on your machine
 Override the endpoint or model if needed: `cfo ai config --provider local --base-url http://host:11434/v1 --model gemma4:27b`.
 
 cfo-cli sends only **aggregated** figures (totals and breakdowns, never individual transactions) and keeps token usage low via prompt caching on the hosted providers. Default models: `claude-sonnet-4-6` (Anthropic), `gpt-4o` (OpenAI), `gemma4` (local), overridable with `--model`. Config is stored locally in `~/.cfo/config.json`. Authentication is by **API key** for the hosted providers (the inference APIs are not OAuth-based); the local provider needs no key.
+
+---
+
+## Model Context Protocol (MCP) Server
+
+Connect your local financial data directly to any AI client (like Claude Desktop, Cursor, or Zed) using the Model Context Protocol (MCP) stdio transport. This allows you to query and update your finances natively from your editor or chat interface.
+
+### Installation & Startup
+
+To run the MCP server, install the optional `mcp` extra:
+
+```bash
+pip install 'cfo-cli[mcp]'
+```
+
+Start the MCP server:
+
+```bash
+cfo mcp start
+```
+
+By default, the server runs in **Read-Only** mode to protect your financial data from prompt injections or unintended mutations. 
+
+To enable write tools (`expense_add`, `income_add`, `budget_create`):
+
+```bash
+# For this session only
+cfo mcp start --read-write
+
+# Or set it persistently in ~/.cfo/config.json
+cfo mcp config --read-write
+```
+
+### Integration with AI Clients
+
+**Claude Desktop:**
+
+Add the server to your configuration in `~/.claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "cfo-mcp": {
+      "command": "cfo",
+      "args": ["mcp", "start"]
+    }
+  }
+}
+```
+
+(Or use `"args": ["mcp", "start", "--read-write"]` if you want to enable writes).
 
 ---
 

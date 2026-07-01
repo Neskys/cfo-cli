@@ -26,7 +26,8 @@ cfo/
 │   ├── forecast.py         # ✅ v0.4 (run + nested `scenario` sub-app)
 │   ├── report.py           # ✅ v0.5
 │   ├── currency.py         # ✅ v0.6
-│   └── ai.py               # ✅ v0.7
+│   ├── ai.py               # ✅ v0.7
+│   └── mcp.py              # 🔜 v0.10 (in progress)
 ├── core/
 │   ├── models.py           # pydantic models + VALID_* constants
 │   ├── config.py           # ~/.cfo/config.json read/write (base_currency)
@@ -39,7 +40,8 @@ cfo/
 │   ├── forecast_scenario.py# custom scenario + adjustment CRUD
 │   ├── currency.py         # FX fetch/cache/convert + base-currency helpers
 │   ├── ai.py               # aggregated context + orchestration (provider-agnostic)
-│   └── ai_providers.py     # Anthropic / OpenAI completion adapters (lazy SDKs)
+│   ├── ai_providers.py     # Anthropic / OpenAI completion adapters (lazy SDKs)
+│   └── mcp_server.py       # 🔜 v0.10 (in progress)
 ├── formatters/
 │   └── tables.py           # reusable Rich table builders
 ├── reports/
@@ -57,7 +59,8 @@ tests/
 ├── test_forecast.py
 ├── test_report.py
 ├── test_currency.py
-└── test_ai.py
+├── test_ai.py
+└── test_mcp.py
 ```
 
 ---
@@ -177,6 +180,7 @@ Docs extra (`[docs]`): `mkdocs-material` (builds the documentation site; see bel
 
 - **v0.8 — Multi-provider AI** — OpenAI alongside Claude, both via **API key** (no OAuth — the inference APIs are key-based). `ai_providers.py` adapts each SDK; `ai config --provider`, `ai set-provider`, per-provider key/model in `~/.cfo/config.json`. Anthropic uses explicit `cache_control`; OpenAI relies on automatic prefix caching (stable context sent first either way). Defaults: anthropic→`claude-sonnet-4-6`, openai→`gpt-4o`.
 - **v0.9 — Free local provider** — `local` provider runs **Gemma 4 via Ollama** at no cost, offline, **no API key**. It reuses the OpenAI-compatible adapter (`openai` SDK) pointed at a configurable `base_url` (default `http://localhost:11434/v1`), default model `gemma4`. No new pip dependency — needs the `[openai]` extra plus a separately-installed Ollama runtime. `KEY_REQUIRED` excludes `local`; `_complete` injects a placeholder key. Local servers have no server-side prompt caching (cost is zero anyway).
+- **v0.10 — MCP Server integration (in progress)** — Expose `cfo` services as AI tools via Model Context Protocol stdio server. Controlled via `--read-write` flag or `config.json` setting. Maps to high-level `FastMCP` wrapper.
 
 ### Toward v1.0 (productization)
 
