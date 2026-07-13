@@ -1,3 +1,5 @@
+# cfo-cli MkDocs configuration
+# GitHub Pages enabled ✓
 site_name: cfo-cli documentation
 site_description: Engineering and product documentation for cfo-cli.
 site_url: https://neskys.github.io/cfo-cli/
