@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-13
+
+First stable release, published to PyPI.
+
+### Changed
+- Version bumped to **1.0.0**; Development Status classifier raised to Production/Stable.
+- `mcp` optional dependency pin raised from `>=0.1.0` to `>=1.2` (first release shipping the `FastMCP` API used by the server).
+
+### Removed
+- `pandas` dropped from core dependencies — declared since v0.1 but never used anywhere in the codebase.
+
+### Fixed
+- **CI and Release workflows now install the `[mcp]` extra** — the test suite failed to collect `tests/test_mcp.py` (`ModuleNotFoundError: mcp`) in both pipelines.
+- **MkDocs strict build**: registered ADR-0007, RFC-0002 and TS-0002 in the `mkdocs.yml` nav (the Docs workflow aborted on the omitted-files warning).
+- MCP tools: optional parameters are now typed `str | None` / `int | None` (previously `str = None`), producing correct tool schemas; the `currency` service import is aliased to `currency_service` so the `currency` tool parameter no longer shadows it.
+
 ## [0.10.0] - 2026-07-01
 
 ### Added
@@ -17,21 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Optional dependency extra `[mcp]`.
 - **Security Model (ADR-0007)**: Read-Only mode by default. Write tools are blocked unless explicitly configured via `"mcp_read_write": true` in `~/.cfo/config.json` or by passing the `--read-write` flag to `cfo mcp start`.
 - **Layered Service Architecture for Budgets**: Extracted database budget logic from the CLI layer into `cfo/services/budget.py` and refactored `cfo/cli/budget.py` to use it (conforming fully to ADR-0002).
-
-### Changed
-- CLI entrypoint registers the new `mcp` sub-app.
-
-### Tests
-- Comprehensive MCP test suite (`tests/test_mcp.py`) checking read tools, write safety guardrails, and CLI configuration/start commands.
-
 - **Continuous integration** (`.github/workflows/ci.yml`): `ruff` + `pytest` on Python 3.10, 3.11 and 3.12 for every push to `main` and every PR.
 - **Release pipeline** (`.github/workflows/release.yml`): on a `v*.*.*` tag, build and publish to PyPI via **Trusted Publishing (OIDC — no stored token)**, gated on the test suite and a tag/version match check.
 - `SessionStart` hook for Claude Code on the web (`.claude/hooks/session-start.sh`) that installs the package with all extras and surfaces the active git branch.
 
 ### Changed
+- CLI entrypoint registers the new `mcp` sub-app.
 - License metadata modernised to **PEP 639** (`license = "MIT"` + `license-files`), emitting a clean `License-Expression`; removed the redundant `License ::` classifier.
 
 ### Tests
+- Comprehensive MCP test suite (`tests/test_mcp.py`) checking read tools, write safety guardrails, and CLI configuration/start commands.
 - Coverage raised from 89% to **94%**; every `cfo/services/*` module is now at 100% (added error/branch/edge-case tests across income, expense, currency, forecast and the AI providers).
 
 ## [0.9.0]
@@ -110,13 +121,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cfo budget create|add-line|view|list|delete` and `cfo version`.
 - Local SQLite storage at `~/.cfo/data.db`.
 
-[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v0.9.0...HEAD
-[0.9.0]: https://github.com/Neskys/cfo-cli/compare/v0.8.0...v0.9.0
-[0.8.0]: https://github.com/Neskys/cfo-cli/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/Neskys/cfo-cli/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/Neskys/cfo-cli/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/Neskys/cfo-cli/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/Neskys/cfo-cli/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/Neskys/cfo-cli/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/Neskys/cfo-cli/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/Neskys/cfo-cli/releases/tag/v0.1.0
+<!-- v0.1.0–v0.10.0 predate the first published tag (v1.0.0), so only these links exist. -->
+[Unreleased]: https://github.com/Neskys/cfo-cli/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Neskys/cfo-cli/releases/tag/v1.0.0

@@ -3,7 +3,8 @@
 from mcp.server.fastmcp import FastMCP
 
 from cfo.core.config import get_mcp_read_write
-from cfo.services import expense, income, budget, forecast, currency
+from cfo.services import expense, income, budget, forecast
+from cfo.services import currency as currency_service
 from cfo.services.expense import ExpenseError
 from cfo.services.income import IncomeError
 from cfo.services.budget import BudgetError
@@ -30,9 +31,9 @@ def _check_write_permission():
 
 @mcp.tool()
 def expense_list(
-    category: str = None,
-    date_from: str = None,
-    date_to: str = None,
+    category: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
     limit: int = 50,
     in_base_currency: bool = False,
 ) -> str:
@@ -64,9 +65,9 @@ def expense_list(
 @mcp.tool()
 def expense_summary(
     group_by: str = "category",
-    date_from: str = None,
-    date_to: str = None,
-    budget_name: str = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    budget_name: str | None = None,
     in_base_currency: bool = False,
 ) -> str:
     """Summarize expenses by category or month. Compares to budget_name if provided."""
@@ -99,9 +100,9 @@ def expense_summary(
 
 @mcp.tool()
 def income_list(
-    source_id: int = None,
-    date_from: str = None,
-    date_to: str = None,
+    source_id: int | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
     limit: int = 50,
     in_base_currency: bool = False,
 ) -> str:
@@ -135,8 +136,8 @@ def income_list(
 @mcp.tool()
 def income_summary(
     group_by: str = "source",
-    date_from: str = None,
-    date_to: str = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
     in_base_currency: bool = False,
 ) -> str:
     """Summarize income entries by source or month."""
@@ -220,7 +221,7 @@ def forecast_run(months: int = 6, scenario: str = "base") -> str:
 def currency_convert(amount: float, currency_from: str, currency_to: str) -> str:
     """Convert an amount from one currency to another using cached rates."""
     try:
-        converted = currency.convert(amount, currency_from, currency_to)
+        converted = currency_service.convert(amount, currency_from, currency_to)
         return (
             f"{amount:.2f} {currency_from.upper()} is equivalent to "
             f"{converted:.2f} {currency_to.upper()}"
@@ -236,9 +237,9 @@ def expense_add(
     category: str,
     amount: float,
     currency: str = "EUR",
-    date: str = None,
-    budget_name: str = None,
-    note: str = None,
+    date: str | None = None,
+    budget_name: str | None = None,
+    note: str | None = None,
 ) -> str:
     """Add a new expense. category, amount are required. currency defaults to EUR. date is YYYY-MM-DD."""
     try:
@@ -264,9 +265,9 @@ def income_add(
     amount: float,
     source_id: int,
     currency: str = "EUR",
-    date: str = None,
-    invoice_ref: str = None,
-    note: str = None,
+    date: str | None = None,
+    invoice_ref: str | None = None,
+    note: str | None = None,
 ) -> str:
     """Add a new income entry. amount, source_id are required. currency defaults to EUR. date is YYYY-MM-DD."""
     try:

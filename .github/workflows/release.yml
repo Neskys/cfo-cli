@@ -50,7 +50,7 @@ jobs:
 
       - name: Run the test suite (release gate)
         run: |
-          pip install -e ".[dev,ai,openai]"
+          pip install -e ".[dev,ai,openai,mcp]"
           ruff check cfo/ tests/
           pytest tests/ -q
 
