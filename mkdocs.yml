@@ -72,10 +72,13 @@ nav:
           - ADR-0004 Aggregated multi-provider AI: adr/ADR-0004-multi-provider-aggregated-ai.md
           - ADR-0005 Lazy imports / extras: adr/ADR-0005-lazy-imports-optional-extras.md
           - ADR-0006 PEP 639 + Trusted Publishing: adr/ADR-0006-pep639-trusted-publishing.md
+          - ADR-0007 MCP authorization & safety: adr/ADR-0007-mcp-authorization-safety.md
       - RFCs:
           - RFC-0001 Interactive console: rfcs/RFC-0001-interactive-console.md
+          - RFC-0002 MCP server: rfcs/RFC-0002-mcp-server.md
       - Tech specs:
           - TS-0001 Interactive console: specs/TS-0001-interactive-console.md
+          - TS-0002 MCP server: specs/TS-0002-mcp-server.md
   - Operations:
       - Release runbook: runbooks/RELEASE.md
       - Operations & support: runbooks/OPERATIONS.md
