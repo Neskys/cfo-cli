@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cfo-cli"
-version = "0.10.0"
+version = "1.0.0"
 description = "Open-source financial CLI for freelancers, consultants, and small teams"
 readme = "README.md"
 license = "MIT"
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["cli", "finance", "budget", "forecasting", "cfo", "freelancer", "expense-tracking"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "Topic :: Office/Business :: Financial",
@@ -27,7 +27,6 @@ requires-python = ">=3.10"
 dependencies = [
     "typer[all]>=0.12",
     "rich>=13",
-    "pandas>=2",
     "pydantic>=2",
     "reportlab>=4",
     "httpx>=0.27",
@@ -46,7 +45,7 @@ openai = [
     "openai>=1.0",
 ]
 mcp = [
-    "mcp>=0.1.0",
+    "mcp>=1.2",
 ]
 docs = [
     "mkdocs-material>=9.5",

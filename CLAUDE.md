@@ -10,7 +10,7 @@ This file provides context to Claude Code when working on this repository.
 - Config (non-DB): `~/.cfo/config.json` (e.g. `base_currency`)
 - Stack: Python 3.10+, typer, rich, pydantic, sqlite3, reportlab (PDF), httpx (FX rates)
 - Repo: https://github.com/Neskys/cfo-cli
-- Current version: **0.9.0** (v0.1–v0.7 roadmap complete; v0.8 adds OpenAI; v0.9 adds a free local provider — Gemma 4 via Ollama)
+- Current version: **1.0.0** (v0.1–v0.7 roadmap complete; v0.8 adds OpenAI; v0.9 adds a free local provider — Gemma 4 via Ollama; v0.10 adds the MCP server; v1.0 is the first PyPI release)
 
 ---
 
@@ -27,7 +27,7 @@ cfo/
 │   ├── report.py           # ✅ v0.5
 │   ├── currency.py         # ✅ v0.6
 │   ├── ai.py               # ✅ v0.7
-│   └── mcp.py              # 🔜 v0.10 (in progress)
+│   └── mcp.py              # ✅ v0.10
 ├── core/
 │   ├── models.py           # pydantic models + VALID_* constants
 │   ├── config.py           # ~/.cfo/config.json read/write (base_currency)
@@ -41,7 +41,7 @@ cfo/
 │   ├── currency.py         # FX fetch/cache/convert + base-currency helpers
 │   ├── ai.py               # aggregated context + orchestration (provider-agnostic)
 │   ├── ai_providers.py     # Anthropic / OpenAI completion adapters (lazy SDKs)
-│   └── mcp_server.py       # 🔜 v0.10 (in progress)
+│   └── mcp_server.py       # ✅ v0.10 (FastMCP tools over the service layer)
 ├── formatters/
 │   └── tables.py           # reusable Rich table builders
 ├── reports/
@@ -153,11 +153,13 @@ Declared in `pyproject.toml`. **Add new ones here and document them in this sect
 |---|---|---|
 | `typer[all]`, `rich` | v0.1 | CLI framework + terminal rendering |
 | `pydantic` | v0.1 | data models |
-| `pandas` | v0.1 | (declared from the start) |
 | `reportlab` | v0.5 | PDF report generation (imported lazily so CSV works without it) |
 | `httpx` | v0.6 | fetch FX rates from open.er-api.com |
 | `anthropic` *(extra `[ai]`)* | v0.7 | Claude integration (lazy-imported; `pip install 'cfo-cli[ai]'`) |
 | `openai` *(extra `[openai]`)* | v0.8 | OpenAI integration (lazy-imported; `pip install 'cfo-cli[openai]'`) |
+| `mcp` *(extra `[mcp]`)* | v0.10 | Model Context Protocol server (FastMCP; `pip install 'cfo-cli[mcp]'`) |
+
+> `pandas` was declared from v0.1 but never used; removed in v1.0.0.
 
 Dev extras (`[dev]`): `pytest`, `pytest-cov`, `ruff`.
 Docs extra (`[docs]`): `mkdocs-material` (builds the documentation site; see below).
@@ -180,7 +182,7 @@ Docs extra (`[docs]`): `mkdocs-material` (builds the documentation site; see bel
 
 - **v0.8 — Multi-provider AI** — OpenAI alongside Claude, both via **API key** (no OAuth — the inference APIs are key-based). `ai_providers.py` adapts each SDK; `ai config --provider`, `ai set-provider`, per-provider key/model in `~/.cfo/config.json`. Anthropic uses explicit `cache_control`; OpenAI relies on automatic prefix caching (stable context sent first either way). Defaults: anthropic→`claude-sonnet-4-6`, openai→`gpt-4o`.
 - **v0.9 — Free local provider** — `local` provider runs **Gemma 4 via Ollama** at no cost, offline, **no API key**. It reuses the OpenAI-compatible adapter (`openai` SDK) pointed at a configurable `base_url` (default `http://localhost:11434/v1`), default model `gemma4`. No new pip dependency — needs the `[openai]` extra plus a separately-installed Ollama runtime. `KEY_REQUIRED` excludes `local`; `_complete` injects a placeholder key. Local servers have no server-side prompt caching (cost is zero anyway).
-- **v0.10 — MCP Server integration (in progress)** — Expose `cfo` services as AI tools via Model Context Protocol stdio server. Controlled via `--read-write` flag or `config.json` setting. Maps to high-level `FastMCP` wrapper.
+- **v0.10 — MCP Server integration** — Expose `cfo` services as AI tools via Model Context Protocol stdio server. Controlled via `--read-write` flag or `config.json` setting. Maps to high-level `FastMCP` wrapper.
 
 ### Toward v1.0 (productization)
 
