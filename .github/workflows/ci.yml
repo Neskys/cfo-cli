@@ -28,7 +28,7 @@ jobs:
           cache: pip
 
       - name: Install (with all extras)
-        run: pip install -e ".[dev,ai,openai]"
+        run: pip install -e ".[dev,ai,openai,mcp]"
 
       - name: Lint (ruff)
         run: ruff check cfo/ tests/
